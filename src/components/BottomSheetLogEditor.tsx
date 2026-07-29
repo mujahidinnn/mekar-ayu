@@ -109,7 +109,7 @@ export function BottomSheetLogEditor({ dateStr, onClose }: BottomSheetLogEditorP
     <Sheet open={!!dateStr} onClose={handleClose} title={title}>
       <div className="space-y-6 pb-4">
         <section>
-          <h3 className="mb-2 text-sm font-semibold text-rose-950">Flow / Menstruasi</h3>
+          <h3 className="mb-2 text-sm font-semibold text-rose-950 dark:text-rose-50">Flow / Menstruasi</h3>
           <div className="flex flex-wrap gap-2">
             {FLOW_OPTIONS.map((opt) => (
               <button
@@ -120,7 +120,9 @@ export function BottomSheetLogEditor({ dateStr, onClose }: BottomSheetLogEditorP
                   persist({ flowIntensity: next, symptoms, moods, notes }, true);
                 }}
                 className={`min-h-11 rounded-full border px-4 py-2 text-sm font-medium transition active:scale-95 ${
-                  flowIntensity === opt.key ? FLOW_ACTIVE_CLASS : 'border-rose-200 bg-white text-rose-900 hover:bg-rose-50'
+                  flowIntensity === opt.key
+                    ? FLOW_ACTIVE_CLASS
+                    : 'border-rose-200 bg-white text-rose-900 hover:bg-rose-50 dark:border-stone-700 dark:bg-stone-800 dark:text-rose-100 dark:hover:bg-stone-700'
                 }`}
               >
                 {opt.label}
@@ -130,7 +132,7 @@ export function BottomSheetLogEditor({ dateStr, onClose }: BottomSheetLogEditorP
         </section>
 
         <section>
-          <h3 className="mb-2 text-sm font-semibold text-rose-950">Gejala</h3>
+          <h3 className="mb-2 text-sm font-semibold text-rose-950 dark:text-rose-50">Gejala</h3>
           <div className="flex flex-wrap gap-2">
             {SYMPTOM_OPTIONS.map((opt) => (
               <Chip
@@ -150,7 +152,7 @@ export function BottomSheetLogEditor({ dateStr, onClose }: BottomSheetLogEditorP
         </section>
 
         <section>
-          <h3 className="mb-2 text-sm font-semibold text-rose-950">Mood</h3>
+          <h3 className="mb-2 text-sm font-semibold text-rose-950 dark:text-rose-50">Mood</h3>
           <div className="flex flex-wrap gap-2">
             {MOOD_OPTIONS.map((opt) => (
               <Chip
@@ -169,7 +171,7 @@ export function BottomSheetLogEditor({ dateStr, onClose }: BottomSheetLogEditorP
         </section>
 
         <section>
-          <h3 className="mb-2 text-sm font-semibold text-rose-950">Catatan</h3>
+          <h3 className="mb-2 text-sm font-semibold text-rose-950 dark:text-rose-50">Catatan</h3>
           <textarea
             value={notes}
             onChange={(e) => {
@@ -178,11 +180,11 @@ export function BottomSheetLogEditor({ dateStr, onClose }: BottomSheetLogEditorP
             }}
             placeholder="Tulis catatan tambahan di sini..."
             rows={3}
-            className="w-full rounded-2xl border border-rose-200 p-3 text-sm text-rose-950 placeholder:text-rose-300 focus:border-rose-400 focus:outline-none"
+            className="w-full rounded-2xl border border-rose-200 p-3 text-sm text-rose-950 placeholder:text-rose-300 focus:border-rose-400 focus:outline-none dark:border-stone-700 dark:bg-stone-800 dark:text-rose-50 dark:placeholder:text-stone-500"
           />
         </section>
 
-        <p className={`text-center text-xs text-emerald-600 transition-opacity ${saved ? 'opacity-100' : 'opacity-0'}`}>
+        <p className={`text-center text-xs text-emerald-600 transition-opacity dark:text-emerald-400 ${saved ? 'opacity-100' : 'opacity-0'}`}>
           Tersimpan otomatis ✓
         </p>
       </div>

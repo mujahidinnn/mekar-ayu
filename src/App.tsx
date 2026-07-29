@@ -29,7 +29,7 @@ function App() {
   }, [isSaving, refreshStorage]);
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-md flex-col bg-rose-50/50">
+    <div className="mx-auto flex min-h-screen max-w-md flex-col bg-rose-50/50 dark:bg-stone-950">
       <Header
         visibleMonth={visibleMonth}
         onPrevMonth={() => setVisibleMonth((m) => subMonths(m, 1))}
@@ -59,7 +59,7 @@ function App() {
       <button
         onClick={() => setSelectedDate(format(new Date(), 'yyyy-MM-dd'))}
         aria-label="Catat hari ini"
-        className="fixed bottom-6 right-6 z-20 flex h-14 w-14 items-center justify-center rounded-full bg-rose-500 text-white shadow-lg shadow-rose-500/30 active:scale-95 transition"
+        className="fixed bottom-6 right-6 z-20 flex h-14 w-14 items-center justify-center rounded-full bg-rose-500 text-white shadow-lg shadow-rose-500/30 active:scale-95 transition dark:bg-rose-600 dark:shadow-black/40"
       >
         <Plus size={26} />
       </button>

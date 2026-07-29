@@ -72,7 +72,7 @@ export function CalendarGrid({ visibleMonth, stats, dailyLogs, onSelectDate, onS
           const inMonth = isSameMonth(day, visibleMonth);
           const today = isToday(day);
 
-          let circleClasses = 'text-rose-950';
+          let circleClasses = 'text-rose-950 dark:text-rose-100';
           if (badges.isLoggedPeriod) {
             circleClasses = 'bg-rose-500 text-white shadow-sm';
           } else if (badges.isPredictedPeriod) {
@@ -100,7 +100,7 @@ export function CalendarGrid({ visibleMonth, stats, dailyLogs, onSelectDate, onS
         })}
       </div>
 
-      <div className="mt-4 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-[11px] text-rose-900/70">
+      <div className="mt-4 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-[11px] text-rose-900/70 dark:text-stone-400">
         <LegendDot className="bg-rose-500" label="Menstruasi" />
         <LegendDot className="bg-rose-200" label="Estimasi" />
         <LegendDot className="bg-amber-200" label="Masa Subur" />

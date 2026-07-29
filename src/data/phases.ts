@@ -69,11 +69,11 @@ export const PHASES: Record<PhaseKey, PhaseInfo> = {
 export const SYMPTOM_OPTIONS = [
   { key: 'cramps', label: 'Kram', emoji: '\u{1FA79}' },
   { key: 'headache', label: 'Sakit Kepala', emoji: '\u{1F915}' },
-  { key: 'acne', label: 'Jerawat', emoji: '\u{1F914}' },
-  { key: 'bloating', label: 'Kembung', emoji: '\u{1F6AB}' },
+  { key: 'acne', label: 'Jerawat', emoji: '\u{1F30B}' },
+  { key: 'bloating', label: 'Kembung', emoji: '\u{1F388}' },
   { key: 'fatigue', label: 'Lelah', emoji: '\u{1F634}' },
   { key: 'backache', label: 'Nyeri Punggung', emoji: '\u{1F9B4}' },
-  { key: 'tender_breasts', label: 'Payudara Nyeri', emoji: '\u{1F318}' },
+  { key: 'tender_breasts', label: 'Payudara Nyeri', emoji: '\u{1F4A2}' },
   { key: 'nausea', label: 'Mual', emoji: '\u{1F922}' },
   { key: 'severe_pain', label: 'Nyeri Hebat (mengganggu aktivitas)', emoji: '\u{1F6A8}' },
 ] as const;

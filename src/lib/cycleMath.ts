@@ -3,12 +3,13 @@ import type { CycleEntry, DailyLog } from '../db/schema';
 import type { PhaseKey } from '../data/phases';
 
 const BLEEDING_INTENSITIES = new Set(['heavy', 'medium', 'light', 'spotting']);
-const TRUE_PERIOD_INTENSITIES = new Set(['heavy', 'medium']);
+// 'light' still counts as a genuine period day (just a lighter flow); only pure 'spotting' —
+// with no heavier day anywhere in the streak — is treated as non-period, intermenstrual bleeding.
+const TRUE_PERIOD_INTENSITIES = new Set(['heavy', 'medium', 'light']);
 
 const DEFAULT_CYCLE_LENGTH = 28;
 const DEFAULT_PERIOD_LENGTH = 5;
 const MAX_GAP_WITHIN_PERIOD = 1; // allow a 1-day gap (e.g. logged light -> skipped -> spotting) inside one bleeding streak
-const MIN_REALISTIC_CYCLE_LENGTH = 10; // segments closer than this to the previous period are treated as spotting, not a new cycle
 
 export type IrregularityFlagKey =
   | 'short_cycle'
@@ -82,9 +83,11 @@ function groupBleedingSegments(sortedLogs: DailyLog[]): BleedingSegment[] {
 }
 
 /**
- * Rebuilds cycle (period) history from raw daily logs. Segments that are pure spotting
- * and land too close after the previous confirmed period are classified as intermenstrual
- * spotting rather than a new cycle, since clinically that is a red-flag symptom, not a new period.
+ * Rebuilds cycle (period) history from raw daily logs. A bleeding streak that never includes
+ * a light/medium/heavy day — pure spotting throughout — is classified as intermenstrual
+ * spotting rather than a new cycle, regardless of how long it's been since the last period.
+ * That's what lets a stray spotting day mid-cycle surface as a red flag instead of silently
+ * corrupting cycle-length stats by being counted as a (very short) new cycle.
  */
 export function rebuildCyclesFromLogs(dailyLogs: DailyLog[]): {
   cycles: Omit<CycleEntry, 'id'>[];
@@ -98,11 +101,7 @@ export function rebuildCyclesFromLogs(dailyLogs: DailyLog[]): {
   let previousStart: string | null = null;
 
   for (const seg of segments) {
-    const gapFromPrevious = previousStart ? differenceInCalendarDays(parseISO(seg.startDate), parseISO(previousStart)) : null;
-    const isTooCloseSpotting = !seg.hasTrueFlow && gapFromPrevious !== null && gapFromPrevious < MIN_REALISTIC_CYCLE_LENGTH;
-
-    if (!seg.hasTrueFlow && (isTooCloseSpotting || previousStart === null)) {
-      // Pure spotting with no confirmed flow, either right after a period or with no baseline yet.
+    if (!seg.hasTrueFlow) {
       intermenstrualSpottingDates.push(...seg.dates);
       continue;
     }
@@ -156,10 +155,14 @@ export function computeCycleStats(
 
   const predictedNextPeriodStart = lastPeriodStart ? format(addDays(parseISO(lastPeriodStart), avgCycleLength), 'yyyy-MM-dd') : null;
 
-  const ovulationDayOffset = Math.max(avgCycleLength - 14, 1);
-  const ovulationDate = lastPeriodStart ? format(addDays(parseISO(lastPeriodStart), ovulationDayOffset - 1), 'yyyy-MM-dd') : null;
+  // ACOG: ovulation occurs ~14 days before the next menses starts — computed directly as a
+  // calendar offset from the predicted next period, not from the last period start, to avoid
+  // off-by-one drift between "days before next period" and a 1-indexed day-of-cycle number.
+  const ovulationDate = predictedNextPeriodStart ? format(addDays(parseISO(predictedNextPeriodStart), -14), 'yyyy-MM-dd') : null;
   const fertileWindowStart = ovulationDate ? format(addDays(parseISO(ovulationDate), -5), 'yyyy-MM-dd') : null;
   const fertileWindowEnd = ovulationDate;
+  // 1-indexed day-of-cycle on which ovulation falls, for phase-boundary comparisons below.
+  const ovulationDayNumber = Math.max(avgCycleLength - 13, 1);
 
   const knownPeriodLength = lastCycle?.periodLength ?? avgPeriodLength;
   const isPeriodActive = currentCycleDay !== null && currentCycleDay >= 1 && currentCycleDay <= knownPeriodLength;
@@ -167,8 +170,8 @@ export function computeCycleStats(
   let currentPhase: PhaseKey | null = null;
   if (currentCycleDay !== null) {
     if (currentCycleDay <= avgPeriodLength) currentPhase = 'menstrual';
-    else if (currentCycleDay < ovulationDayOffset - 5) currentPhase = 'follicular';
-    else if (currentCycleDay <= ovulationDayOffset) currentPhase = 'ovulatory';
+    else if (currentCycleDay < ovulationDayNumber - 5) currentPhase = 'follicular';
+    else if (currentCycleDay <= ovulationDayNumber) currentPhase = 'ovulatory';
     else currentPhase = 'luteal';
   }
 

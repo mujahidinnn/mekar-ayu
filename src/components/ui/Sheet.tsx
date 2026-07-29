@@ -88,26 +88,26 @@ export function Sheet({ open, onClose, title, children }: SheetProps) {
     <div className="fixed inset-0 z-50 flex items-end justify-center">
       <button
         aria-label="Tutup"
-        className="absolute inset-0 bg-rose-950/40 animate-fade-in"
+        className="absolute inset-0 bg-rose-950/40 animate-fade-in dark:bg-black/60"
         onClick={onClose}
       />
       <div
         ref={panelRef}
-        className="relative w-full max-w-md max-h-[88vh] overflow-y-auto rounded-t-3xl bg-white shadow-2xl animate-slide-up pb-[env(safe-area-inset-bottom)]"
+        className="relative w-full max-w-md max-h-[88vh] overflow-y-auto rounded-t-3xl bg-white shadow-2xl animate-slide-up pb-[env(safe-area-inset-bottom)] dark:bg-stone-900"
       >
         <div
-          className="sticky top-0 z-10 flex touch-none select-none items-center justify-between border-b border-rose-100 bg-white/95 backdrop-blur px-5 py-4 rounded-t-3xl cursor-grab active:cursor-grabbing"
+          className="sticky top-0 z-10 flex touch-none select-none items-center justify-between border-b border-rose-100 bg-white/95 backdrop-blur px-5 py-4 rounded-t-3xl cursor-grab active:cursor-grabbing dark:border-stone-800 dark:bg-stone-900/95"
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={(e) => finishDrag(e.clientY)}
           onPointerCancel={() => finishDrag(null)}
         >
-          <div className="mx-auto h-1.5 w-10 rounded-full bg-rose-200 absolute left-1/2 top-2 -translate-x-1/2" />
-          <h2 className="text-base font-semibold text-rose-950 mt-2">{title}</h2>
+          <div className="mx-auto h-1.5 w-10 rounded-full bg-rose-200 absolute left-1/2 top-2 -translate-x-1/2 dark:bg-stone-700" />
+          <h2 className="text-base font-semibold text-rose-950 mt-2 dark:text-rose-50">{title}</h2>
           <button
             onClick={onClose}
             aria-label="Tutup"
-            className="mt-2 flex h-11 w-11 items-center justify-center rounded-full text-rose-400 hover:bg-rose-50 active:scale-95 transition"
+            className="mt-2 flex h-11 w-11 items-center justify-center rounded-full text-rose-400 hover:bg-rose-50 active:scale-95 transition dark:text-rose-400 dark:hover:bg-stone-800"
           >
             <X size={20} />
           </button>
