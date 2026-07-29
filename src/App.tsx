@@ -10,6 +10,7 @@ import { SettingsSheet } from './components/SettingsSheet';
 import { useCycleAnalytics } from './hooks/useCycleAnalytics';
 import { useStorageMonitor } from './hooks/useStorageMonitor';
 import { useSyncStatus } from './hooks/useSyncStatus';
+import { useTheme } from './hooks/useTheme';
 
 function App() {
   const [visibleMonth, setVisibleMonth] = useState(new Date());
@@ -18,6 +19,7 @@ function App() {
 
   const { stats, cycles, dailyLogs } = useCycleAnalytics();
   const { usageKB, recordCount, isPersisted, refreshStorage } = useStorageMonitor();
+  const { preference: themePreference, setTheme } = useTheme();
 
   // navigator.storage.estimate() has no native "changed" event, so the header's storage
   // size is kept fresh by re-checking right after each save finishes (isSaving true -> false).
@@ -76,6 +78,8 @@ function App() {
         usageKB={usageKB}
         recordCount={recordCount}
         isPersisted={isPersisted}
+        themePreference={themePreference}
+        onThemeChange={setTheme}
       />
     </div>
   );

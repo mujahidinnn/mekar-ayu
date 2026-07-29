@@ -10,9 +10,12 @@ import {
   FileText,
   HelpCircle,
   MessageCircle,
+  Monitor,
+  Moon,
   ShieldCheck,
   ShieldOff,
   Smartphone,
+  Sun,
   Trash2,
   Upload,
 } from 'lucide-react';
@@ -28,6 +31,8 @@ import { generateWhatsAppSummary } from '../lib/export/whatsapp';
 import { withSync } from '../lib/syncStatus';
 import { formatStorageSize } from '../lib/formatStorageSize';
 import { deleteAllData } from '../lib/deleteAllData';
+import { useInstallPrompt } from '../hooks/useInstallPrompt';
+import type { ThemePreference } from '../lib/theme';
 
 interface SettingsSheetProps {
   open: boolean;
@@ -39,7 +44,15 @@ interface SettingsSheetProps {
   usageKB: number;
   recordCount: number;
   isPersisted: boolean;
+  themePreference: ThemePreference;
+  onThemeChange: (pref: ThemePreference) => void;
 }
+
+const THEME_OPTIONS: { key: ThemePreference; label: string; icon: React.ReactNode }[] = [
+  { key: 'light', label: 'Terang', icon: <Sun size={14} /> },
+  { key: 'dark', label: 'Gelap', icon: <Moon size={14} /> },
+  { key: 'system', label: 'Sistem', icon: <Monitor size={14} /> },
+];
 
 export function SettingsSheet({
   open,
@@ -51,6 +64,8 @@ export function SettingsSheet({
   usageKB,
   recordCount,
   isPersisted,
+  themePreference,
+  onThemeChange,
 }: SettingsSheetProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [importMessage, setImportMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -59,7 +74,9 @@ export function SettingsSheet({
   const [backupGuideOpen, setBackupGuideOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [confirmInstallOpen, setConfirmInstallOpen] = useState(false);
   const [pendingImport, setPendingImport] = useState<{ text: string; cycleCount: number; logCount: number } | null>(null);
+  const { isInstallable, isInstalled, promptInstall } = useInstallPrompt();
 
   useEffect(() => {
     if (open) onRefreshStorage();
@@ -122,6 +139,21 @@ export function SettingsSheet({
     setTimeout(() => setImportMessage(null), 4000);
   };
 
+  const handleConfirmInstall = async () => {
+    setConfirmInstallOpen(false);
+    if (!isInstallable) {
+      // Browser doesn't support the native install prompt (e.g. iOS Safari) — fall back
+      // to the manual step-by-step guide instead of pretending a button did something.
+      setPwaGuideOpen(true);
+      return;
+    }
+    const outcome = await promptInstall();
+    if (outcome === 'accepted') {
+      setImportMessage({ type: 'success', text: 'M-Project sedang dipasang ke perangkatmu.' });
+      setTimeout(() => setImportMessage(null), 4000);
+    }
+  };
+
   return (
     <>
       <Sheet open={open} onClose={onClose} title="Pengaturan & Backup">
@@ -149,6 +181,36 @@ export function SettingsSheet({
               </div>
             </div>
           </section>
+
+          <section>
+            <h3 className="mb-2 text-sm font-semibold text-rose-950 dark:text-rose-50">Tampilan</h3>
+            <div className="flex rounded-full bg-rose-50 p-1 dark:bg-stone-800">
+              {THEME_OPTIONS.map((opt) => (
+                <button
+                  key={opt.key}
+                  onClick={() => onThemeChange(opt.key)}
+                  className={`flex flex-1 items-center justify-center gap-1.5 rounded-full py-2 text-xs font-semibold transition ${
+                    themePreference === opt.key
+                      ? 'bg-white text-rose-950 shadow-sm dark:bg-stone-700 dark:text-rose-50'
+                      : 'text-rose-900/60 dark:text-stone-400'
+                  }`}
+                >
+                  {opt.icon} {opt.label}
+                </button>
+              ))}
+            </div>
+          </section>
+
+          {!isInstalled && (
+            <section>
+              <button
+                onClick={() => setConfirmInstallOpen(true)}
+                className="flex min-h-11 w-full items-center justify-center gap-2 rounded-2xl bg-rose-500 px-4 py-2.5 text-sm font-semibold text-white active:scale-95 hover:bg-rose-600 transition dark:bg-rose-600 dark:hover:bg-rose-500"
+              >
+                <Smartphone size={16} /> Install
+              </button>
+            </section>
+          )}
 
           <section>
             <button
@@ -186,7 +248,6 @@ export function SettingsSheet({
           <section>
             <h3 className="mb-2 text-sm font-semibold text-rose-950 dark:text-rose-50">Panduan</h3>
             <div className="grid grid-cols-1 gap-2">
-              <ActionButton icon={<Smartphone size={16} />} label="Cara Pasang ke Layar Utama (PWA)" onClick={() => setPwaGuideOpen(true)} fullWidth />
               <ActionButton icon={<HelpCircle size={16} />} label="Panduan Backup & Restore" onClick={() => setBackupGuideOpen(true)} fullWidth />
             </div>
           </section>
@@ -222,7 +283,7 @@ export function SettingsSheet({
           </section>
 
           <section>
-            <h3 className="mb-2 text-sm font-semibold text-red-700 dark:text-red-400">Zona Berbahaya</h3>
+            <h3 className="mb-2 text-sm font-semibold text-rose-950 dark:text-rose-50">Kelola Data</h3>
             <button
               onClick={() => setConfirmDeleteOpen(true)}
               className="flex min-h-11 w-full items-center justify-center gap-2 rounded-2xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-semibold text-red-700 active:scale-95 hover:bg-red-100 transition dark:border-red-900 dark:bg-red-950/40 dark:text-red-400 dark:hover:bg-red-950/60"
@@ -241,6 +302,20 @@ export function SettingsSheet({
       <PwaInstallSheet open={pwaGuideOpen} onClose={() => setPwaGuideOpen(false)} />
       <BackupGuideSheet open={backupGuideOpen} onClose={() => setBackupGuideOpen(false)} />
       <HistorySheet open={historyOpen} onClose={() => setHistoryOpen(false)} cycles={cycles} dailyLogs={dailyLogs} stats={stats} />
+
+      <ConfirmDialog
+        open={confirmInstallOpen}
+        title="Install M-Project?"
+        description={
+          <>
+            M-Project akan terpasang di layar utama HP-mu seperti aplikasi biasa — lebih cepat dibuka dan bisa dipakai walau offline. Semua
+            datamu tetap 100% tersimpan lokal di perangkat ini, tidak ada yang berubah soal privasi.
+          </>
+        }
+        confirmLabel="Install"
+        onConfirm={handleConfirmInstall}
+        onCancel={() => setConfirmInstallOpen(false)}
+      />
 
       <ConfirmDialog
         open={!!pendingImport}

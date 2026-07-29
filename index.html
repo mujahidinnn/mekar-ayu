@@ -5,9 +5,20 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1" />
-    <meta name="theme-color" content="#FB7185" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#1c1917" media="(prefers-color-scheme: dark)" />
+    <meta id="theme-color-meta" name="theme-color" content="#FB7185" />
     <meta name="description" content="M Project — pelacak siklus menstruasi privat, 100% tersimpan di perangkat Anda. Tanpa akun, tanpa server, tanpa pelacakan." />
+    <script>
+      (function () {
+        try {
+          var pref = localStorage.getItem('m-project-theme');
+          var isDark = pref === 'dark' || (pref !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          if (isDark) {
+            document.documentElement.classList.add('dark');
+            document.getElementById('theme-color-meta')?.setAttribute('content', '#1c1917');
+          }
+        } catch (e) {}
+      })();
+    </script>
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="M Project" />
