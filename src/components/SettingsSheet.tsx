@@ -4,6 +4,7 @@ import { id as localeId } from 'date-fns/locale';
 import {
   AlertTriangle,
   BarChart3,
+  BookOpen,
   Database,
   Download,
   FileSpreadsheet,
@@ -24,6 +25,7 @@ import { ConfirmDialog } from './ui/ConfirmDialog';
 import { PwaInstallSheet } from './PwaInstallSheet';
 import { BackupGuideSheet } from './BackupGuideSheet';
 import { HistorySheet } from './HistorySheet';
+import { FullGuideSheet } from './FullGuideSheet';
 import type { CycleEntry, DailyLog } from '../db/schema';
 import type { CycleStats } from '../lib/cycleMath';
 import { exportBackupJSON, importBackupJSON } from '../lib/export/json';
@@ -72,6 +74,7 @@ export function SettingsSheet({
   const [showEducation, setShowEducation] = useState(false);
   const [pwaGuideOpen, setPwaGuideOpen] = useState(false);
   const [backupGuideOpen, setBackupGuideOpen] = useState(false);
+  const [fullGuideOpen, setFullGuideOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [confirmInstallOpen, setConfirmInstallOpen] = useState(false);
@@ -248,6 +251,7 @@ export function SettingsSheet({
           <section>
             <h3 className="mb-2 text-sm font-semibold text-rose-950 dark:text-rose-50">Panduan</h3>
             <div className="grid grid-cols-1 gap-2">
+              <ActionButton icon={<BookOpen size={16} />} label="Panduan Lengkap Menstruasi" onClick={() => setFullGuideOpen(true)} fullWidth />
               <ActionButton icon={<HelpCircle size={16} />} label="Panduan Backup & Restore" onClick={() => setBackupGuideOpen(true)} fullWidth />
             </div>
           </section>
@@ -301,6 +305,7 @@ export function SettingsSheet({
 
       <PwaInstallSheet open={pwaGuideOpen} onClose={() => setPwaGuideOpen(false)} />
       <BackupGuideSheet open={backupGuideOpen} onClose={() => setBackupGuideOpen(false)} />
+      <FullGuideSheet open={fullGuideOpen} onClose={() => setFullGuideOpen(false)} />
       <HistorySheet open={historyOpen} onClose={() => setHistoryOpen(false)} cycles={cycles} dailyLogs={dailyLogs} stats={stats} />
 
       <ConfirmDialog
