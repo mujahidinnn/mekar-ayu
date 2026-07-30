@@ -46,17 +46,23 @@ export function BottomSheetLogEditor({ dateStr, onClose }: BottomSheetLogEditorP
     if (!pending) return;
     pendingRef.current = null;
 
-    await withSync(async () => {
-      await db.dailyLogs.put({
+    await withSync(() =>
+      db.dailyLogs.put({
         date: pending.dateStr,
         flowIntensity: pending.fields.flowIntensity === 'none' ? undefined : pending.fields.flowIntensity,
         symptoms: pending.fields.symptoms,
         moods: pending.fields.moods,
         notes: pending.fields.notes || undefined,
         updatedAt: Date.now(),
-      });
-      if (pending.flowChanged) await syncCyclesTable();
-    });
+      }),
+    );
+
+    // Cycle stats are a derived cache rebuilt from the *entire* log history, which is real
+    // I/O (full table read + clear + bulk write) — running it in the background instead of
+    // blocking on it here is what keeps a single flow tap from feeling slow to save.
+    if (pending.flowChanged) {
+      withSync(() => syncCyclesTable()).catch((err) => console.error('Gagal menyinkronkan siklus', err));
+    }
   };
 
   useEffect(() => {
