@@ -7,6 +7,41 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1" />
     <meta id="theme-color-meta" name="theme-color" content="#FB7185" />
     <meta name="description" content="Mekar Ayu — pelacak siklus menstruasi privat, 100% tersimpan di perangkat Anda. Tanpa akun, tanpa server, tanpa pelacakan." />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://mekar-ayu.vercel.app/" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Mekar Ayu" />
+    <meta property="og:locale" content="id_ID" />
+    <meta property="og:url" content="https://mekar-ayu.vercel.app/" />
+    <meta property="og:title" content="Mekar Ayu — Pelacak Siklus Privat" />
+    <meta property="og:description" content="Pelacak siklus menstruasi privat, 100% tersimpan di perangkat Anda. Tanpa akun, tanpa server, tanpa pelacakan." />
+    <meta property="og:image" content="https://mekar-ayu.vercel.app/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Mekar Ayu — Pelacak Siklus Privat" />
+    <meta name="twitter:description" content="Pelacak siklus menstruasi privat, 100% tersimpan di perangkat Anda. Tanpa akun, tanpa server, tanpa pelacakan." />
+    <meta name="twitter:image" content="https://mekar-ayu.vercel.app/og-image.png" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Mekar Ayu",
+        "url": "https://mekar-ayu.vercel.app/",
+        "description": "Pelacak siklus menstruasi privat, 100% tersimpan di perangkat Anda. Tanpa akun, tanpa server, tanpa pelacakan.",
+        "applicationCategory": "HealthApplication",
+        "operatingSystem": "Any (Progressive Web App)",
+        "inLanguage": "id",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        }
+      }
+    </script>
     <script>
       (function () {
         try {
@@ -23,8 +58,73 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="Mekar Ayu" />
     <title>Mekar Ayu — Pelacak Siklus Privat</title>
+    <style>
+      #splash {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 14px;
+        background: #fff1f2;
+        transition: opacity 0.4s ease;
+      }
+      html.dark #splash {
+        background: #0c0a09;
+      }
+      #splash svg {
+        width: 72px;
+        height: 72px;
+        animation: splash-breathe 1.8s ease-in-out infinite;
+      }
+      #splash span {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        font-size: 15px;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        color: #4c0519;
+        opacity: 0.85;
+      }
+      html.dark #splash span {
+        color: #fff1f2;
+      }
+      @keyframes splash-breathe {
+        0%,
+        100% {
+          transform: scale(1);
+          opacity: 1;
+        }
+        50% {
+          transform: scale(1.08);
+          opacity: 0.85;
+        }
+      }
+      #splash.splash-hide {
+        opacity: 0;
+        pointer-events: none;
+      }
+      #splash .splash-dot {
+        fill: #fff1f2;
+      }
+      html.dark #splash .splash-dot {
+        fill: #0c0a09;
+      }
+    </style>
   </head>
   <body>
+    <div id="splash" aria-hidden="true">
+      <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="32" cy="22" r="9" fill="#FB7185" />
+        <circle cx="41.51" cy="28.91" r="9" fill="#FB7185" />
+        <circle cx="37.88" cy="40.09" r="9" fill="#FB7185" />
+        <circle cx="26.12" cy="40.09" r="9" fill="#FB7185" />
+        <circle cx="22.49" cy="28.91" r="9" fill="#FB7185" />
+        <circle class="splash-dot" cx="32" cy="32" r="5" />
+      </svg>
+      <span>Mekar Ayu</span>
+    </div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

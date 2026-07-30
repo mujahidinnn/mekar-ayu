@@ -30,7 +30,9 @@ export default defineConfig({
         // deps) are dynamically imported only when the user taps an export button — they're
         // rarely used, so they shouldn't bloat the up-front install cache. They're still fully
         // available offline once fetched once, via the runtime caching rule below.
-        globIgnores: ['**/pdf-*.js', '**/excel-*.js', '**/html2canvas*.js', '**/purify*.js'],
+        // og-image.png is only ever fetched by social-link crawlers (Open Graph/Twitter
+        // Card previews), never by the app itself, so it doesn't belong in the offline cache.
+        globIgnores: ['**/pdf-*.js', '**/excel-*.js', '**/html2canvas*.js', '**/purify*.js', '**/og-image.png'],
         runtimeCaching: [
           {
             urlPattern: /\/assets\/(pdf|excel|html2canvas|purify)[^/]*\.js$/,

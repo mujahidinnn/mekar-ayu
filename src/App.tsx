@@ -12,12 +12,14 @@ import { useStorageMonitor } from './hooks/useStorageMonitor';
 import { useSyncStatus } from './hooks/useSyncStatus';
 import { useTheme } from './hooks/useTheme';
 
+const MIN_SPLASH_MS = 400;
+
 function App() {
   const [visibleMonth, setVisibleMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
 
-  const { stats, cycles, dailyLogs } = useCycleAnalytics();
+  const { stats, cycles, dailyLogs, isLoading } = useCycleAnalytics();
   const { usageKB, recordCount, isPersisted, refreshStorage } = useStorageMonitor();
   const { preference: themePreference, setTheme } = useTheme();
 
@@ -29,6 +31,22 @@ function App() {
     if (wasSaving.current && !isSaving) refreshStorage();
     wasSaving.current = isSaving;
   }, [isSaving, refreshStorage]);
+
+  // #splash is a plain DOM node painted inline in index.html so it appears before the JS
+  // bundle even loads. It's dismissed here once the first cycle data query resolves, held
+  // for a minimum stretch so it doesn't flash on/off on devices where that query is instant.
+  const mountedAt = useRef(Date.now());
+  useEffect(() => {
+    if (isLoading) return;
+    const splash = document.getElementById('splash');
+    if (!splash) return;
+    const wait = Math.max(0, MIN_SPLASH_MS - (Date.now() - mountedAt.current));
+    const timer = setTimeout(() => {
+      splash.classList.add('splash-hide');
+      splash.addEventListener('transitionend', () => splash.remove(), { once: true });
+    }, wait);
+    return () => clearTimeout(timer);
+  }, [isLoading]);
 
   return (
     <div className="mx-auto flex min-h-screen max-w-md flex-col bg-rose-50/50 dark:bg-stone-950">
