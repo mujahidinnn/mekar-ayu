@@ -1,6 +1,6 @@
 export type ThemePreference = 'light' | 'dark' | 'system';
 
-const STORAGE_KEY = 'm-project-theme';
+const STORAGE_KEY = 'mekarayu-theme';
 const THEME_COLOR_LIGHT = '#FB7185';
 const THEME_COLOR_DARK = '#1c1917';
 

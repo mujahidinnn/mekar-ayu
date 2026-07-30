@@ -29,7 +29,7 @@ const STEPS: Record<Platform, { icon: React.ReactNode; title: string; descriptio
     {
       icon: <LayoutGrid size={20} />,
       title: 'Selesai!',
-      description: 'Ikon M-Project akan muncul di layar utama HP-mu, bisa dibuka seperti aplikasi biasa tanpa membuka browser.',
+      description: 'Ikon Mekar Ayu akan muncul di layar utama HP-mu, bisa dibuka seperti aplikasi biasa tanpa membuka browser.',
     },
   ],
   android: [
@@ -51,7 +51,7 @@ const STEPS: Record<Platform, { icon: React.ReactNode; title: string; descriptio
     {
       icon: <LayoutGrid size={20} />,
       title: 'Selesai!',
-      description: 'M-Project akan terpasang seperti aplikasi native, lengkap dengan ikonnya sendiri di layar utama.',
+      description: 'Mekar Ayu akan terpasang seperti aplikasi native, lengkap dengan ikonnya sendiri di layar utama.',
     },
   ],
 };
@@ -63,7 +63,7 @@ export function PwaInstallSheet({ open, onClose }: PwaInstallSheetProps) {
     <Sheet open={open} onClose={onClose} title="Cara Pasang ke Layar Utama">
       <div className="space-y-5 pb-4">
         <p className="text-sm text-rose-900/70 dark:text-stone-300">
-          Pasang M-Project ke layar utama HP-mu agar bisa dibuka seperti aplikasi biasa — lebih cepat, bisa dipakai offline, dan tetap 100%
+          Pasang Mekar Ayu ke layar utama HP-mu agar bisa dibuka seperti aplikasi biasa — lebih cepat, bisa dipakai offline, dan tetap 100%
           tersimpan lokal di perangkatmu.
         </p>
 

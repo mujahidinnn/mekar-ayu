@@ -152,7 +152,7 @@ export function SettingsSheet({
     }
     const outcome = await promptInstall();
     if (outcome === 'accepted') {
-      setImportMessage({ type: 'success', text: 'M-Project sedang dipasang ke perangkatmu.' });
+      setImportMessage({ type: 'success', text: 'Mekar Ayu sedang dipasang ke perangkatmu.' });
       setTimeout(() => setImportMessage(null), 4000);
     }
   };
@@ -279,7 +279,7 @@ export function SettingsSheet({
                   melalui Backup, lalu Import file tersebut di HP baru Anda.
                 </li>
                 <li>
-                  <span className="font-semibold text-rose-950 dark:text-rose-50">Kunci Memori (Storage Persistence):</span> M-Project otomatis
+                  <span className="font-semibold text-rose-950 dark:text-rose-50">Kunci Memori (Storage Persistence):</span> Mekar Ayu otomatis
                   meminta browser melindungi datamu dari penghapusan saat memori HP penuh — tidak perlu tindakan apa pun darimu.
                 </li>
               </ul>
@@ -297,7 +297,7 @@ export function SettingsSheet({
           </section>
 
           <p className="text-center text-[11px] leading-relaxed text-rose-900/50 dark:text-stone-500">
-            M-Project adalah aplikasi 100% local-first. Tidak ada server, tidak ada akun, tidak ada pelacakan. Seluruh data hanya tersimpan di
+            Mekar Ayu adalah aplikasi 100% local-first. Tidak ada server, tidak ada akun, tidak ada pelacakan. Seluruh data hanya tersimpan di
             perangkat ini.
           </p>
         </div>
@@ -310,10 +310,10 @@ export function SettingsSheet({
 
       <ConfirmDialog
         open={confirmInstallOpen}
-        title="Install M-Project?"
+        title="Install Mekar Ayu?"
         description={
           <>
-            M-Project akan terpasang di layar utama HP-mu seperti aplikasi biasa — lebih cepat dibuka dan bisa dipakai walau offline. Semua
+            Mekar Ayu akan terpasang di layar utama HP-mu seperti aplikasi biasa — lebih cepat dibuka dan bisa dipakai walau offline. Semua
             datamu tetap 100% tersimpan lokal di perangkat ini, tidak ada yang berubah soal privasi.
           </>
         }

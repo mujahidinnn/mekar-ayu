@@ -5,7 +5,7 @@ export async function exportBackupJSON(): Promise<void> {
   const dailyLogs = await db.dailyLogs.toArray();
 
   const backupData = {
-    app: 'm-project',
+    app: 'mekarayu',
     version: 1,
     exportedAt: new Date().toISOString(),
     cycles,
@@ -16,7 +16,7 @@ export async function exportBackupJSON(): Promise<void> {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `m-project-backup-${new Date().toISOString().split('T')[0]}.json`;
+  a.download = `mekarayu-backup-${new Date().toISOString().split('T')[0]}.json`;
   a.click();
   URL.revokeObjectURL(url);
 }

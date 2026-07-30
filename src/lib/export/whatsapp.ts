@@ -14,7 +14,7 @@ export function generateWhatsAppSummary(monthName: string, cycles: CycleEntry[],
 
   const sortedLogs = [...dailyLogs].sort((a, b) => a.date.localeCompare(b.date));
 
-  const text = `\u{1F338} *REKAP SIKLUS MENSTRUASI (M-PROJECT)* \u{1F338}
+  const text = `\u{1F338} *REKAP SIKLUS MENSTRUASI (MEKAR AYU)* \u{1F338}
 Periode: ${monthName}
 
 \u{1F4CC} *Ringkasan Siklus:*
@@ -36,7 +36,7 @@ ${
   }
 
 ---
-\u{1F512} Data ini dicatat privat di M-Project (100% Local-First, Tanpa Server).`;
+\u{1F512} Data ini dicatat privat di Mekar Ayu (100% Local-First, Tanpa Server).`;
 
   return `https://wa.me/?text=${encodeURIComponent(text)}`;
 }

@@ -30,5 +30,5 @@ export function exportExcelReport(cycles: CycleEntry[], dailyLogs: DailyLog[]): 
   XLSX.utils.book_append_sheet(workbook, cycleSheet, 'Riwayat Siklus');
   XLSX.utils.book_append_sheet(workbook, logSheet, 'Catatan Harian');
 
-  XLSX.writeFile(workbook, `m-project-data-${new Date().toISOString().split('T')[0]}.xlsx`);
+  XLSX.writeFile(workbook, `mekarayu-data-${new Date().toISOString().split('T')[0]}.xlsx`);
 }

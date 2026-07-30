@@ -11,7 +11,7 @@ export function BackupGuideSheet({ open, onClose }: BackupGuideSheetProps) {
     <Sheet open={open} onClose={onClose} title="Panduan Backup & Restore">
       <div className="space-y-5 pb-4">
         <p className="text-sm text-rose-900/70 dark:text-stone-300">
-          Karena M-Project tidak punya server, file <span className="font-semibold text-rose-950 dark:text-rose-50">JSON backup</span> adalah
+          Karena Mekar Ayu tidak punya server, file <span className="font-semibold text-rose-950 dark:text-rose-50">JSON backup</span> adalah
           satu-satunya cara untuk memindahkan datamu ke HP lain atau menyelamatkannya dari kehilangan data.
         </p>
 
@@ -24,7 +24,7 @@ export function BackupGuideSheet({ open, onClose }: BackupGuideSheetProps) {
           </div>
           <ol className="ml-11 list-decimal space-y-1 text-sm text-rose-900/70 dark:text-stone-300">
             <li>Buka Pengaturan → ketuk "Backup JSON".</li>
-            <li>File otomatis terunduh ke folder Download/File HP-mu, contoh: m-project-backup-2026-07-29.json.</li>
+            <li>File otomatis terunduh ke folder Download/File HP-mu, contoh: mekarayu-backup-2026-07-29.json.</li>
             <li>Pindahkan file itu ke tempat aman — Google Drive pribadi, email ke dirimu sendiri, atau simpan di HP baru.</li>
           </ol>
         </section>

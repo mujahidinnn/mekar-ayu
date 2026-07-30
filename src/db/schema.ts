@@ -25,13 +25,13 @@ export interface AppSettings {
   value: unknown;
 }
 
-export class MProjectDatabase extends Dexie {
+export class MekarayuDatabase extends Dexie {
   cycles!: Table<CycleEntry, number>;
   dailyLogs!: Table<DailyLog, string>;
   settings!: Table<AppSettings, string>;
 
   constructor() {
-    super('MProjectDB');
+    super('MekarayuDB');
     this.version(1).stores({
       cycles: '++id, startDate, endDate',
       dailyLogs: 'date, flowIntensity, updatedAt',
@@ -44,4 +44,4 @@ export class MProjectDatabase extends Dexie {
   }
 }
 
-export const db = new MProjectDatabase();
+export const db = new MekarayuDatabase();

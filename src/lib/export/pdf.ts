@@ -16,7 +16,7 @@ export function generateMedicalReportPDF(cycles: CycleEntry[], dailyLogs: DailyL
 
   doc.setFontSize(18);
   doc.setTextColor(190, 18, 60);
-  doc.text('M-Project — Laporan Riwayat Siklus Menstruasi', marginX, cursorY);
+  doc.text('Mekar Ayu — Laporan Riwayat Siklus Menstruasi', marginX, cursorY);
 
   cursorY += 20;
   doc.setFontSize(10);
@@ -116,7 +116,7 @@ export function generateMedicalReportPDF(cycles: CycleEntry[], dailyLogs: DailyL
 
   doc.setFontSize(8);
   doc.setTextColor(140, 140, 140);
-  doc.text('Dihasilkan oleh M-Project — 100% Local-First, Zero Backend, Zero Telemetry.', marginX, 820);
+  doc.text('Dihasilkan oleh Mekar Ayu — 100% Local-First, Zero Backend, Zero Telemetry.', marginX, 820);
 
-  doc.save(`m-project-laporan-medis-${new Date().toISOString().split('T')[0]}.pdf`);
+  doc.save(`mekarayu-laporan-medis-${new Date().toISOString().split('T')[0]}.pdf`);
 }

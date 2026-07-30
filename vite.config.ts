@@ -10,8 +10,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'apple-touch-icon.png', 'pwa-192x192.png', 'pwa-512x512.png'],
       manifest: {
-        name: 'M Project - Period & Cycle Tracker',
-        short_name: 'M Project',
+        name: 'Mekar Ayu - Period & Cycle Tracker',
+        short_name: 'Mekar Ayu',
         description: 'Privacy-first, local-only period and reproductive health tracker. Zero backend, zero telemetry.',
         theme_color: '#FB7185',
         background_color: '#FFF1F2',
@@ -37,7 +37,7 @@ export default defineConfig({
             urlPattern: /\/assets\/(pdf|excel|html2canvas|purify)[^/]*\.js$/,
             handler: 'CacheFirst',
             options: {
-              cacheName: 'm-project-export-libs',
+              cacheName: 'mekarayu-export-libs',
               expiration: { maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 * 90 },
             },
           },
