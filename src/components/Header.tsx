@@ -59,10 +59,10 @@ export function Header({
               role="status"
               aria-label="Menyinkronkan perubahan"
               title="Menyinkronkan perubahan…"
-              className="flex items-center gap-1.5 pl-1 pr-2 text-amber-600 dark:text-amber-400"
+              className="flex items-center gap-1 pl-1 pr-2 text-amber-600 dark:text-amber-400"
             >
-              <Loader2 size={16} className="animate-spin" />
-              <span className="text-xs font-medium">Menyinkronkan…</span>
+              <Loader2 size={13} className="animate-spin" />
+              <span className="text-[10px] font-medium">Menyinkronkan…</span>
             </span>
           )}
           <button

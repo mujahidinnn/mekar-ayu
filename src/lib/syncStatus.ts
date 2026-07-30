@@ -2,16 +2,20 @@
 // "Menyinkronkan…" indicator the way Docs/Sheets does — not tied to browser storage-persistence
 // permission, which many browsers never auto-grant and would otherwise show forever.
 //
-// Once shown, the indicator stays up for at least MIN_VISIBLE_MS. Small writes can resolve
-// within the same microtask batch React uses to flush state, which would otherwise make the
-// "on" state invisible — shown and hidden before a single paint ever happens.
+// The indicator only appears after SHOW_DELAY_MS of a write still being in flight. Ordinary
+// local IndexedDB writes finish in a few ms, well under that delay, so it never mounts for them
+// — this is what keeps the header/sheet from visibly reflowing on every keystroke. It's reserved
+// for genuinely slow operations (large import/export). Once shown, it stays up for at least
+// MIN_VISIBLE_MS so it doesn't flash on/off before a single paint happens.
 type Listener = () => void;
 
+const SHOW_DELAY_MS = 1200;
 const MIN_VISIBLE_MS = 400;
 
 let activeWrites = 0;
 let visible = false;
 let shownAt = 0;
+let showTimer: ReturnType<typeof setTimeout> | null = null;
 let hideTimer: ReturnType<typeof setTimeout> | null = null;
 const listeners = new Set<Listener>();
 
@@ -25,16 +29,26 @@ export function beginSync() {
     clearTimeout(hideTimer);
     hideTimer = null;
   }
-  if (!visible) {
-    visible = true;
-    shownAt = Date.now();
-    notify();
+  if (!visible && !showTimer) {
+    showTimer = setTimeout(() => {
+      showTimer = null;
+      if (activeWrites === 0) return;
+      visible = true;
+      shownAt = Date.now();
+      notify();
+    }, SHOW_DELAY_MS);
   }
 }
 
 export function endSync() {
   activeWrites = Math.max(0, activeWrites - 1);
   if (activeWrites > 0) return;
+
+  if (showTimer) {
+    clearTimeout(showTimer);
+    showTimer = null;
+  }
+  if (!visible) return;
 
   const remaining = MIN_VISIBLE_MS - (Date.now() - shownAt);
   if (remaining > 0) {
