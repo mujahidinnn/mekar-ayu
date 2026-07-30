@@ -1,50 +1,62 @@
-# React + TypeScript + Vite
+# Mekar Ayu
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Pelacak siklus menstruasi yang privat dan 100% berjalan di perangkat pengguna. Tanpa akun, tanpa server, tanpa pelacakan — seluruh data tersimpan secara lokal di browser.
 
-Currently, two official plugins are available:
+**Live:** https://mekar-ayu.vercel.app/
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Fitur
 
-## Expanding the ESLint configuration
+- Kalender siklus dengan prediksi fase (menstruasi, subur, ovulasi, dll.)
+- Pencatatan harian: intensitas flow, gejala, mood, dan catatan
+- Ringkasan analitik siklus (rata-rata panjang siklus, status saat ini)
+- Red flag banner untuk pola yang perlu diperhatikan
+- Ekspor data ke PDF/Excel
+- Mode gelap/terang
+- Progressive Web App (PWA) — dapat diinstal dan dipakai offline
+- Penyimpanan 100% lokal menggunakan IndexedDB (Dexie) — tidak ada backend atau telemetry
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+## Tech Stack
 
-- Configure the top-level `parserOptions` property like this:
+- [React](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/)
+- [Vite](https://vite.dev/)
+- [Tailwind CSS](https://tailwindcss.com/)
+- [Dexie](https://dexie.org/) (IndexedDB) untuk penyimpanan lokal
+- [vite-plugin-pwa](https://vite-pwa-org.netlify.app/) untuk dukungan PWA
+- `jspdf` / `xlsx` untuk ekspor data
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+## Menjalankan Secara Lokal
+
+```bash
+npm install
+npm run dev
 ```
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+Perintah lain yang tersedia:
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+```bash
+npm run build    # type-check + build production
+npm run lint      # jalankan ESLint
+npm run preview   # preview hasil build production
+```
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
+## Deploy dengan Docker
+
+Proyek ini menyertakan `Dockerfile` (build multi-stage dengan Nginx) dan `docker-compose.yml`:
+
+```bash
+docker compose up --build
+```
+
+Aplikasi akan tersedia di `http://localhost:8080`.
+
+## Struktur Proyek
+
+```
+src/
+├── components/   # Komponen UI (kalender, sheets, header, dll.)
+├── data/         # Data statis (fase siklus)
+├── db/           # Skema database Dexie/IndexedDB
+├── hooks/        # Custom React hooks (analytics, sync status, tema, dll.)
+├── lib/          # Logika inti (perhitungan siklus, ekspor, dll.)
+└── App.tsx       # Entry point aplikasi
 ```

@@ -22,13 +22,14 @@ import {
 } from 'lucide-react';
 import { Sheet } from './ui/Sheet';
 import { ConfirmDialog } from './ui/ConfirmDialog';
+import { PasswordDialog } from './ui/PasswordDialog';
 import { PwaInstallSheet } from './PwaInstallSheet';
 import { BackupGuideSheet } from './BackupGuideSheet';
 import { HistorySheet } from './HistorySheet';
 import { FullGuideSheet } from './FullGuideSheet';
 import type { CycleEntry, DailyLog } from '../db/schema';
 import type { CycleStats } from '../lib/cycleMath';
-import { exportBackupJSON, importBackupJSON } from '../lib/export/json';
+import { exportBackupJSON, importBackupJSON, isEncryptedBackup, readBackupFile } from '../lib/export/json';
 import { generateWhatsAppSummary } from '../lib/export/whatsapp';
 import { withSync } from '../lib/syncStatus';
 import { formatStorageSize } from '../lib/formatStorageSize';
@@ -79,6 +80,11 @@ export function SettingsSheet({
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [confirmInstallOpen, setConfirmInstallOpen] = useState(false);
   const [pendingImport, setPendingImport] = useState<{ text: string; cycleCount: number; logCount: number } | null>(null);
+  const [exportLockOpen, setExportLockOpen] = useState(false);
+  const [exportBusy, setExportBusy] = useState(false);
+  const [pendingLockedFile, setPendingLockedFile] = useState<string | null>(null);
+  const [unlockError, setUnlockError] = useState<string | null>(null);
+  const [unlockBusy, setUnlockBusy] = useState(false);
   const { isInstallable, isInstalled, promptInstall } = useInstallPrompt();
 
   useEffect(() => {
@@ -110,6 +116,11 @@ export function SettingsSheet({
     try {
       const text = await file.text();
       const data = JSON.parse(text);
+      if (isEncryptedBackup(data)) {
+        setUnlockError(null);
+        setPendingLockedFile(text);
+        return;
+      }
       if (!Array.isArray(data.cycles) || !Array.isArray(data.dailyLogs)) {
         throw new Error('invalid');
       }
@@ -118,6 +129,45 @@ export function SettingsSheet({
       setImportMessage({ type: 'error', text: 'Gagal membaca file. Pastikan file backup JSON valid.' });
       setTimeout(() => setImportMessage(null), 4000);
     }
+  };
+
+  const handleUnlockSubmit = async (password: string) => {
+    if (!pendingLockedFile) return;
+    setUnlockBusy(true);
+    try {
+      const plainText = await readBackupFile(pendingLockedFile, password);
+      const data = JSON.parse(plainText);
+      setPendingImport({ text: plainText, cycleCount: data.cycles.length, logCount: data.dailyLogs.length });
+      setPendingLockedFile(null);
+      setUnlockError(null);
+    } catch (err) {
+      setUnlockError(err instanceof Error && err.message === 'WRONG_PASSWORD' ? 'Kata sandi salah. Coba lagi.' : 'File terkunci ini tidak valid.');
+    } finally {
+      setUnlockBusy(false);
+    }
+  };
+
+  const handleUnlockCancel = () => {
+    setPendingLockedFile(null);
+    setUnlockError(null);
+  };
+
+  const handleExportSubmit = async (password: string) => {
+    setExportBusy(true);
+    try {
+      await exportBackupJSON(password);
+      setExportLockOpen(false);
+    } catch {
+      setImportMessage({ type: 'error', text: 'Gagal mengunci file. Coba lagi.' });
+      setTimeout(() => setImportMessage(null), 4000);
+    } finally {
+      setExportBusy(false);
+    }
+  };
+
+  const handleExportSkip = async () => {
+    setExportLockOpen(false);
+    await exportBackupJSON();
   };
 
   const confirmImport = async () => {
@@ -227,7 +277,7 @@ export function SettingsSheet({
           <section>
             <h3 className="mb-2 text-sm font-semibold text-rose-950 dark:text-rose-50">Backup & Ekspor</h3>
             <div className="grid grid-cols-2 gap-2">
-              <ActionButton icon={<Download size={16} />} label="Backup JSON" onClick={exportBackupJSON} />
+              <ActionButton icon={<Download size={16} />} label="Backup JSON" onClick={() => setExportLockOpen(true)} />
               <ActionButton icon={<Upload size={16} />} label="Pulihkan JSON" onClick={handleImportClick} />
               <ActionButton icon={<FileText size={16} />} label="Laporan PDF" onClick={handlePdfExport} />
               <ActionButton icon={<FileSpreadsheet size={16} />} label="Ekspor Excel" onClick={handleExcelExport} />
@@ -340,6 +390,28 @@ export function SettingsSheet({
         destructive
         onConfirm={confirmImport}
         onCancel={() => setPendingImport(null)}
+      />
+
+      <PasswordDialog
+        open={exportLockOpen}
+        mode="set"
+        title="Kunci file backup?"
+        description="Tambahkan kata sandi supaya isi file ini tidak bisa dibaca orang lain kalau tersimpan di Drive, email, atau HP yang hilang. Simpan baik-baik — tanpa kata sandi ini, file tidak bisa dipulihkan."
+        busy={exportBusy}
+        onSubmit={handleExportSubmit}
+        onCancel={() => setExportLockOpen(false)}
+        onSkip={handleExportSkip}
+      />
+
+      <PasswordDialog
+        open={!!pendingLockedFile}
+        mode="unlock"
+        title="File ini terkunci"
+        description="Masukkan kata sandi yang dipakai saat file backup ini dibuat."
+        error={unlockError}
+        busy={unlockBusy}
+        onSubmit={handleUnlockSubmit}
+        onCancel={handleUnlockCancel}
       />
 
       <ConfirmDialog
