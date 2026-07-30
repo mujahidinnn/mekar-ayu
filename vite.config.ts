@@ -9,9 +9,11 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'apple-touch-icon.png', 'pwa-192x192.png', 'pwa-512x512.png'],
       manifest: {
+        id: '/',
         name: 'Mekar Ayu - Period & Cycle Tracker',
         short_name: 'Mekar Ayu',
         description: 'Privacy-first, local-only period and reproductive health tracker. Zero backend, zero telemetry.',
+        categories: ['health', 'lifestyle', 'medical'],
         theme_color: '#FB7185',
         background_color: '#FFF1F2',
         display: 'standalone',
@@ -23,6 +25,19 @@ export default defineConfig({
           { src: 'pwa-512x512.png', sizes: '512x512', type: 'image/png' },
           { src: 'pwa-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
+        // Lets Chrome's install prompt show an actual preview of the app instead of a bare
+        // name + icon — the richer, more legitimate-looking dialog is the one lever this repo
+        // has over "app info" during install; OS-level post-install scanners (e.g. MIUI's own
+        // security app) key off the resulting package's signature/reputation, not this manifest.
+        screenshots: [
+          {
+            src: 'screenshot-narrow.png',
+            sizes: '1082x2402',
+            type: 'image/png',
+            form_factor: 'narrow',
+            label: 'Kalender siklus Mekar Ayu',
+          },
+        ],
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
@@ -30,9 +45,9 @@ export default defineConfig({
         // deps) are dynamically imported only when the user taps an export button — they're
         // rarely used, so they shouldn't bloat the up-front install cache. They're still fully
         // available offline once fetched once, via the runtime caching rule below.
-        // og-image.png is only ever fetched by social-link crawlers (Open Graph/Twitter
-        // Card previews), never by the app itself, so it doesn't belong in the offline cache.
-        globIgnores: ['**/pdf-*.js', '**/excel-*.js', '**/html2canvas*.js', '**/purify*.js', '**/og-image.png'],
+        // og-image.png and screenshot-narrow.png are only ever fetched by social-link crawlers
+        // and Chrome's install-prompt UI, never by the app itself, so neither belongs offline.
+        globIgnores: ['**/pdf-*.js', '**/excel-*.js', '**/html2canvas*.js', '**/purify*.js', '**/og-image.png', '**/screenshot-narrow.png'],
         runtimeCaching: [
           {
             urlPattern: /\/assets\/(pdf|excel|html2canvas|purify)[^/]*\.js$/,

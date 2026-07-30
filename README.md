@@ -4,6 +4,29 @@ Pelacak siklus menstruasi yang privat dan 100% berjalan di perangkat pengguna. T
 
 **Live:** https://mekar-ayu.vercel.app/
 
+## Preview
+
+<table>
+  <tr>
+    <td align="center" width="25%">
+      <img src="docs/screenshots/01-home-calendar.png" width="200" alt="Kalender siklus di halaman utama" /><br />
+      <sub><b>Kalender & Status Siklus</b></sub>
+    </td>
+    <td align="center" width="25%">
+      <img src="docs/screenshots/02-log-editor.png" width="200" alt="Pencatatan flow, gejala, dan mood harian" /><br />
+      <sub><b>Catat Harian</b></sub>
+    </td>
+    <td align="center" width="25%">
+      <img src="docs/screenshots/04-history.png" width="200" alt="Riwayat dan tren siklus" /><br />
+      <sub><b>Riwayat & Tren</b></sub>
+    </td>
+    <td align="center" width="25%">
+      <img src="docs/screenshots/03-settings.png" width="200" alt="Pengaturan, tema, dan ekspor data" /><br />
+      <sub><b>Pengaturan & Backup</b></sub>
+    </td>
+  </tr>
+</table>
+
 ## Fitur
 
 - Kalender siklus dengan prediksi fase (menstruasi, subur, ovulasi, dll.)

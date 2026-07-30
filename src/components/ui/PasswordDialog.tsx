@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
-import { Lock } from 'lucide-react';
+import { Eye, EyeOff, Lock } from 'lucide-react';
 
 interface PasswordDialogProps {
   open: boolean;
@@ -12,6 +12,38 @@ interface PasswordDialogProps {
   onSubmit: (password: string) => void;
   onCancel: () => void;
   onSkip?: () => void;
+}
+
+function PasswordField({
+  value,
+  onChange,
+  placeholder,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  placeholder: string;
+}) {
+  const [visible, setVisible] = useState(false);
+
+  return (
+    <div className="relative">
+      <input
+        type={visible ? 'text' : 'password'}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="w-full rounded-xl border border-rose-200 bg-white px-3 py-2.5 pr-10 text-sm text-rose-950 outline-none focus:border-rose-400 dark:border-stone-700 dark:bg-stone-800 dark:text-rose-50"
+      />
+      <button
+        type="button"
+        onClick={() => setVisible((v) => !v)}
+        aria-label={visible ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi'}
+        className="absolute right-0 top-0 flex h-full w-10 items-center justify-center text-rose-900/50 dark:text-stone-400"
+      >
+        {visible ? <EyeOff size={16} /> : <Eye size={16} />}
+      </button>
+    </div>
+  );
 }
 
 // Same centered-modal treatment as ConfirmDialog — entering/handling a password is a
@@ -58,31 +90,15 @@ export function PasswordDialog({ open, mode, title, description, error, busy, on
         {description && <div className="mt-2 text-sm leading-relaxed text-rose-900/70 dark:text-stone-300">{description}</div>}
 
         <div className="mt-4 space-y-2">
-          <input
-            type="password"
-            autoFocus
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Kata sandi"
-            className="w-full rounded-xl border border-rose-200 bg-white px-3 py-2.5 text-sm text-rose-950 outline-none focus:border-rose-400 dark:border-stone-700 dark:bg-stone-800 dark:text-rose-50"
-          />
-          {mode === 'set' && (
-            <input
-              type="password"
-              value={confirm}
-              onChange={(e) => setConfirm(e.target.value)}
-              placeholder="Ulangi kata sandi"
-              className="w-full rounded-xl border border-rose-200 bg-white px-3 py-2.5 text-sm text-rose-950 outline-none focus:border-rose-400 dark:border-stone-700 dark:bg-stone-800 dark:text-rose-50"
-            />
-          )}
+          <PasswordField value={password} onChange={setPassword} placeholder="Kata sandi" />
+          {mode === 'set' && <PasswordField value={confirm} onChange={setConfirm} placeholder="Ulangi kata sandi" />}
           {(localError || error) && <p className="text-xs font-medium text-red-600 dark:text-red-400">{localError || error}</p>}
         </div>
 
         {mode === 'set' && onSkip ? (
           // Both export paths are legitimate — a password is recommended, not required — so
-          // "without a password" gets a full button here too, not a demoted text link. Only
-          // Cancel (abandoning the export entirely) is the actually-rare path, so that's what
-          // gets pushed down to a plain text link below.
+          // "without a password" and "Batal" get equal-weight buttons here, not a demoted text
+          // link. Only the locked/recommended path stands out, as the standalone primary button.
           <div className="mt-5 space-y-2">
             <button
               type="submit"
@@ -91,13 +107,22 @@ export function PasswordDialog({ open, mode, title, description, error, busy, on
             >
               {busy ? 'Memproses…' : 'Kunci & Unduh'}
             </button>
-            <button
-              type="button"
-              onClick={onSkip}
-              className="min-h-11 w-full rounded-2xl border border-rose-200 text-sm font-semibold text-rose-900 active:scale-95 transition hover:bg-rose-50 dark:border-stone-700 dark:text-rose-100 dark:hover:bg-stone-800"
-            >
-              Unduh Tanpa Sandi
-            </button>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={onCancel}
+                className="min-h-11 flex-1 rounded-2xl border border-rose-200 text-sm font-semibold text-rose-900 active:scale-95 transition hover:bg-rose-50 dark:border-stone-700 dark:text-rose-100 dark:hover:bg-stone-800"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={onSkip}
+                className="min-h-11 flex-1 rounded-2xl border border-rose-200 text-sm font-semibold text-rose-900 active:scale-95 transition hover:bg-rose-50 dark:border-stone-700 dark:text-rose-100 dark:hover:bg-stone-800"
+              >
+                Unduh Tanpa Sandi
+              </button>
+            </div>
           </div>
         ) : (
           <div className="mt-5 flex gap-2">
@@ -116,16 +141,6 @@ export function PasswordDialog({ open, mode, title, description, error, busy, on
               {busy ? 'Memproses…' : 'Buka Kunci'}
             </button>
           </div>
-        )}
-
-        {mode === 'set' && onSkip && (
-          <button
-            type="button"
-            onClick={onCancel}
-            className="mt-2 w-full text-center text-xs font-medium text-rose-900/60 hover:underline dark:text-stone-400"
-          >
-            Batal
-          </button>
         )}
       </form>
     </div>
