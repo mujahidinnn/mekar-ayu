@@ -3,7 +3,6 @@ function round(value: number, decimals: number): number {
   return Math.round(value * factor) / factor;
 }
 
-/** Formats a KB size into the most readable unit, auto-scaling KB -> MB -> GB. */
 export function formatStorageSize(kb: number): string {
   if (kb < 1024) return `${round(kb, kb < 10 ? 1 : 0)} KB`;
 

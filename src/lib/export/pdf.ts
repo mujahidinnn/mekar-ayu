@@ -8,7 +8,6 @@ function labelFor(list: readonly { key: string; label: string }[], key: string):
   return list.find((o) => o.key === key)?.label ?? key;
 }
 
-/** Builds a clean, gynecologist-friendly medical PDF report from local cycle & symptom history. */
 export function generateMedicalReportPDF(cycles: CycleEntry[], dailyLogs: DailyLog[], stats: CycleStats): void {
   const doc = new jsPDF({ unit: 'pt', format: 'a4' });
   const marginX = 40;

@@ -3,8 +3,8 @@ import type { CycleStats } from './cycleMath';
 import type { DailyLog } from '../db/schema';
 
 export interface DayBadges {
-  isLoggedPeriod: boolean; // actual bleeding logged that day
-  isPredictedPeriod: boolean; // inside the predicted upcoming period window
+  isLoggedPeriod: boolean;
+  isPredictedPeriod: boolean;
   isFertileWindow: boolean;
   isOvulationDay: boolean;
   hasNote: boolean;
