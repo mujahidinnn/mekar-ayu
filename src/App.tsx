@@ -76,13 +76,15 @@ function App() {
         <EducationCard phase={stats.currentPhase} />
       </main>
 
-      <button
-        onClick={() => setSelectedDate(format(new Date(), 'yyyy-MM-dd'))}
-        aria-label="Catat hari ini"
-        className="fixed bottom-6 right-6 z-20 flex h-14 w-14 items-center justify-center rounded-full bg-rose-500 text-white shadow-lg shadow-rose-500/30 active:scale-95 transition dark:bg-rose-600 dark:shadow-black/40"
-      >
-        <Plus size={26} />
-      </button>
+      <div className="pointer-events-none fixed inset-x-0 bottom-6 z-20 mx-auto flex max-w-md justify-end px-6">
+        <button
+          onClick={() => setSelectedDate(format(new Date(), 'yyyy-MM-dd'))}
+          aria-label="Catat hari ini"
+          className="pointer-events-auto flex h-14 w-14 items-center justify-center rounded-full bg-rose-500 text-white shadow-lg shadow-rose-500/30 active:scale-95 transition dark:bg-rose-600 dark:shadow-black/40"
+        >
+          <Plus size={26} />
+        </button>
+      </div>
 
       <BottomSheetLogEditor dateStr={selectedDate} onClose={() => setSelectedDate(null)} />
 

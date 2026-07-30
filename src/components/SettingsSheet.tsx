@@ -1,10 +1,11 @@
-import { useEffect, useRef, useState } from 'react';
-import { format } from 'date-fns';
-import { id as localeId } from 'date-fns/locale';
+import { useEffect, useRef, useState } from "react";
+import { format } from "date-fns";
+import { id as localeId } from "date-fns/locale";
 import {
   AlertTriangle,
   BarChart3,
   BookOpen,
+  Coffee,
   Database,
   Download,
   FileSpreadsheet,
@@ -19,23 +20,28 @@ import {
   Sun,
   Trash2,
   Upload,
-} from 'lucide-react';
-import { Sheet } from './ui/Sheet';
-import { ConfirmDialog } from './ui/ConfirmDialog';
-import { PasswordDialog } from './ui/PasswordDialog';
-import { PwaInstallSheet } from './PwaInstallSheet';
-import { BackupGuideSheet } from './BackupGuideSheet';
-import { HistorySheet } from './HistorySheet';
-import { FullGuideSheet } from './FullGuideSheet';
-import type { CycleEntry, DailyLog } from '../db/schema';
-import type { CycleStats } from '../lib/cycleMath';
-import { exportBackupJSON, importBackupJSON, isEncryptedBackup, readBackupFile } from '../lib/export/json';
-import { generateWhatsAppSummary } from '../lib/export/whatsapp';
-import { withSync } from '../lib/syncStatus';
-import { formatStorageSize } from '../lib/formatStorageSize';
-import { deleteAllData } from '../lib/deleteAllData';
-import { useInstallPrompt } from '../hooks/useInstallPrompt';
-import type { ThemePreference } from '../lib/theme';
+} from "lucide-react";
+import { Sheet } from "./ui/Sheet";
+import { ConfirmDialog } from "./ui/ConfirmDialog";
+import { PasswordDialog } from "./ui/PasswordDialog";
+import { PwaInstallSheet } from "./PwaInstallSheet";
+import { BackupGuideSheet } from "./BackupGuideSheet";
+import { HistorySheet } from "./HistorySheet";
+import { FullGuideSheet } from "./FullGuideSheet";
+import type { CycleEntry, DailyLog } from "../db/schema";
+import type { CycleStats } from "../lib/cycleMath";
+import {
+  exportBackupJSON,
+  importBackupJSON,
+  isEncryptedBackup,
+  readBackupFile,
+} from "../lib/export/json";
+import { generateWhatsAppSummary } from "../lib/export/whatsapp";
+import { withSync } from "../lib/syncStatus";
+import { formatStorageSize } from "../lib/formatStorageSize";
+import { deleteAllData } from "../lib/deleteAllData";
+import { useInstallPrompt } from "../hooks/useInstallPrompt";
+import type { ThemePreference } from "../lib/theme";
 
 interface SettingsSheetProps {
   open: boolean;
@@ -51,10 +57,14 @@ interface SettingsSheetProps {
   onThemeChange: (pref: ThemePreference) => void;
 }
 
-const THEME_OPTIONS: { key: ThemePreference; label: string; icon: React.ReactNode }[] = [
-  { key: 'light', label: 'Terang', icon: <Sun size={14} /> },
-  { key: 'dark', label: 'Gelap', icon: <Moon size={14} /> },
-  { key: 'system', label: 'Sistem', icon: <Monitor size={14} /> },
+const THEME_OPTIONS: {
+  key: ThemePreference;
+  label: string;
+  icon: React.ReactNode;
+}[] = [
+  { key: "light", label: "Terang", icon: <Sun size={14} /> },
+  { key: "dark", label: "Gelap", icon: <Moon size={14} /> },
+  { key: "system", label: "Sistem", icon: <Monitor size={14} /> },
 ];
 
 export function SettingsSheet({
@@ -71,7 +81,10 @@ export function SettingsSheet({
   onThemeChange,
 }: SettingsSheetProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [importMessage, setImportMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [importMessage, setImportMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
   const [showEducation, setShowEducation] = useState(false);
   const [pwaGuideOpen, setPwaGuideOpen] = useState(false);
   const [backupGuideOpen, setBackupGuideOpen] = useState(false);
@@ -79,10 +92,16 @@ export function SettingsSheet({
   const [historyOpen, setHistoryOpen] = useState(false);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [confirmInstallOpen, setConfirmInstallOpen] = useState(false);
-  const [pendingImport, setPendingImport] = useState<{ text: string; cycleCount: number; logCount: number } | null>(null);
+  const [pendingImport, setPendingImport] = useState<{
+    text: string;
+    cycleCount: number;
+    logCount: number;
+  } | null>(null);
   const [exportLockOpen, setExportLockOpen] = useState(false);
   const [exportBusy, setExportBusy] = useState(false);
-  const [pendingLockedFile, setPendingLockedFile] = useState<string | null>(null);
+  const [pendingLockedFile, setPendingLockedFile] = useState<string | null>(
+    null,
+  );
   const [unlockError, setUnlockError] = useState<string | null>(null);
   const [unlockBusy, setUnlockBusy] = useState(false);
   const { isInstallable, isInstalled, promptInstall } = useInstallPrompt();
@@ -92,26 +111,26 @@ export function SettingsSheet({
   }, [open, onRefreshStorage]);
 
   const handleWhatsAppShare = () => {
-    const monthName = format(new Date(), 'MMMM yyyy', { locale: localeId });
+    const monthName = format(new Date(), "MMMM yyyy", { locale: localeId });
     const url = generateWhatsAppSummary(monthName, cycles, dailyLogs);
-    window.open(url, '_blank');
+    window.open(url, "_blank");
   };
 
   const handleImportClick = () => fileInputRef.current?.click();
 
   const handlePdfExport = async () => {
-    const { generateMedicalReportPDF } = await import('../lib/export/pdf');
+    const { generateMedicalReportPDF } = await import("../lib/export/pdf");
     generateMedicalReportPDF(cycles, dailyLogs, stats);
   };
 
   const handleExcelExport = async () => {
-    const { exportExcelReport } = await import('../lib/export/excel');
+    const { exportExcelReport } = await import("../lib/export/excel");
     exportExcelReport(cycles, dailyLogs);
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    e.target.value = '';
+    e.target.value = "";
     if (!file) return;
     try {
       const text = await file.text();
@@ -122,11 +141,18 @@ export function SettingsSheet({
         return;
       }
       if (!Array.isArray(data.cycles) || !Array.isArray(data.dailyLogs)) {
-        throw new Error('invalid');
+        throw new Error("invalid");
       }
-      setPendingImport({ text, cycleCount: data.cycles.length, logCount: data.dailyLogs.length });
+      setPendingImport({
+        text,
+        cycleCount: data.cycles.length,
+        logCount: data.dailyLogs.length,
+      });
     } catch {
-      setImportMessage({ type: 'error', text: 'Gagal membaca file. Pastikan file backup JSON valid.' });
+      setImportMessage({
+        type: "error",
+        text: "Gagal membaca file. Pastikan file backup JSON valid.",
+      });
       setTimeout(() => setImportMessage(null), 4000);
     }
   };
@@ -137,11 +163,19 @@ export function SettingsSheet({
     try {
       const plainText = await readBackupFile(pendingLockedFile, password);
       const data = JSON.parse(plainText);
-      setPendingImport({ text: plainText, cycleCount: data.cycles.length, logCount: data.dailyLogs.length });
+      setPendingImport({
+        text: plainText,
+        cycleCount: data.cycles.length,
+        logCount: data.dailyLogs.length,
+      });
       setPendingLockedFile(null);
       setUnlockError(null);
     } catch (err) {
-      setUnlockError(err instanceof Error && err.message === 'WRONG_PASSWORD' ? 'Kata sandi salah. Coba lagi.' : 'File terkunci ini tidak valid.');
+      setUnlockError(
+        err instanceof Error && err.message === "WRONG_PASSWORD"
+          ? "Kata sandi salah. Coba lagi."
+          : "File terkunci ini tidak valid.",
+      );
     } finally {
       setUnlockBusy(false);
     }
@@ -158,7 +192,10 @@ export function SettingsSheet({
       await exportBackupJSON(password);
       setExportLockOpen(false);
     } catch {
-      setImportMessage({ type: 'error', text: 'Gagal mengunci file. Coba lagi.' });
+      setImportMessage({
+        type: "error",
+        text: "Gagal mengunci file. Coba lagi.",
+      });
       setTimeout(() => setImportMessage(null), 4000);
     } finally {
       setExportBusy(false);
@@ -175,9 +212,15 @@ export function SettingsSheet({
     try {
       await withSync(() => importBackupJSON(pendingImport.text));
       onRefreshStorage();
-      setImportMessage({ type: 'success', text: 'Data berhasil dipulihkan dari file backup.' });
+      setImportMessage({
+        type: "success",
+        text: "Data berhasil dipulihkan dari file backup.",
+      });
     } catch {
-      setImportMessage({ type: 'error', text: 'Gagal memulihkan data. Pastikan file backup valid.' });
+      setImportMessage({
+        type: "error",
+        text: "Gagal memulihkan data. Pastikan file backup valid.",
+      });
     } finally {
       setPendingImport(null);
       setTimeout(() => setImportMessage(null), 4000);
@@ -188,7 +231,7 @@ export function SettingsSheet({
     await withSync(() => deleteAllData());
     onRefreshStorage();
     setConfirmDeleteOpen(false);
-    setImportMessage({ type: 'success', text: 'Semua data berhasil dihapus.' });
+    setImportMessage({ type: "success", text: "Semua data berhasil dihapus." });
     setTimeout(() => setImportMessage(null), 4000);
   };
 
@@ -201,8 +244,11 @@ export function SettingsSheet({
       return;
     }
     const outcome = await promptInstall();
-    if (outcome === 'accepted') {
-      setImportMessage({ type: 'success', text: 'Mekar Ayu sedang dipasang ke perangkatmu.' });
+    if (outcome === "accepted") {
+      setImportMessage({
+        type: "success",
+        text: "Mekar Ayu sedang dipasang ke perangkatmu.",
+      });
       setTimeout(() => setImportMessage(null), 4000);
     }
   };
@@ -218,25 +264,37 @@ export function SettingsSheet({
             <div className="rounded-2xl border border-rose-100 bg-rose-50/60 p-4 text-sm text-rose-900/80 dark:border-stone-800 dark:bg-stone-900 dark:text-stone-300">
               <div className="flex justify-between py-0.5">
                 <span>Total data tersimpan</span>
-                <span className="font-medium text-rose-950 dark:text-rose-50">{recordCount} entri</span>
+                <span className="font-medium text-rose-950 dark:text-rose-50">
+                  {recordCount} entri
+                </span>
               </div>
               <div className="flex justify-between py-0.5">
                 <span>Ukuran data siklus & catatan</span>
-                <span className="font-medium text-rose-950 dark:text-rose-50">{formatStorageSize(usageKB)}</span>
+                <span className="font-medium text-rose-950 dark:text-rose-50">
+                  {formatStorageSize(usageKB)}
+                </span>
               </div>
               <div
-                className={`mt-3 flex items-center gap-2 rounded-xl bg-white p-3 dark:bg-stone-800 ${isPersisted ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-900/50 dark:text-stone-500'}`}
+                className={`mt-3 flex items-center gap-2 rounded-xl bg-white p-3 dark:bg-stone-800 ${isPersisted ? "text-emerald-600 dark:text-emerald-400" : "text-rose-900/50 dark:text-stone-500"}`}
               >
-                {isPersisted ? <ShieldCheck size={18} /> : <ShieldOff size={18} />}
+                {isPersisted ? (
+                  <ShieldCheck size={18} />
+                ) : (
+                  <ShieldOff size={18} />
+                )}
                 <span className="text-xs font-medium">
-                  {isPersisted ? 'Data terlindungi dari penghapusan otomatis' : 'Menunggu izin penyimpanan dari browser'}
+                  {isPersisted
+                    ? "Data terlindungi dari penghapusan otomatis"
+                    : "Menunggu izin penyimpanan dari browser"}
                 </span>
               </div>
             </div>
           </section>
 
           <section>
-            <h3 className="mb-2 text-sm font-semibold text-rose-950 dark:text-rose-50">Tampilan</h3>
+            <h3 className="mb-2 text-sm font-semibold text-rose-950 dark:text-rose-50">
+              Tampilan
+            </h3>
             <div className="flex rounded-full bg-rose-50 p-1 dark:bg-stone-800">
               {THEME_OPTIONS.map((opt) => (
                 <button
@@ -244,8 +302,8 @@ export function SettingsSheet({
                   onClick={() => onThemeChange(opt.key)}
                   className={`flex flex-1 items-center justify-center gap-1.5 rounded-full py-2 text-xs font-semibold transition ${
                     themePreference === opt.key
-                      ? 'bg-white text-rose-950 shadow-sm dark:bg-stone-700 dark:text-rose-50'
-                      : 'text-rose-900/60 dark:text-stone-400'
+                      ? "bg-white text-rose-950 shadow-sm dark:bg-stone-700 dark:text-rose-50"
+                      : "text-rose-900/60 dark:text-stone-400"
                   }`}
                 >
                   {opt.icon} {opt.label}
@@ -275,12 +333,30 @@ export function SettingsSheet({
           </section>
 
           <section>
-            <h3 className="mb-2 text-sm font-semibold text-rose-950 dark:text-rose-50">Backup & Ekspor</h3>
+            <h3 className="mb-2 text-sm font-semibold text-rose-950 dark:text-rose-50">
+              Backup & Ekspor
+            </h3>
             <div className="grid grid-cols-2 gap-2">
-              <ActionButton icon={<Download size={16} />} label="Backup JSON" onClick={() => setExportLockOpen(true)} />
-              <ActionButton icon={<Upload size={16} />} label="Pulihkan JSON" onClick={handleImportClick} />
-              <ActionButton icon={<FileText size={16} />} label="Laporan PDF" onClick={handlePdfExport} />
-              <ActionButton icon={<FileSpreadsheet size={16} />} label="Ekspor Excel" onClick={handleExcelExport} />
+              <ActionButton
+                icon={<Download size={16} />}
+                label="Backup JSON"
+                onClick={() => setExportLockOpen(true)}
+              />
+              <ActionButton
+                icon={<Upload size={16} />}
+                label="Pulihkan JSON"
+                onClick={handleImportClick}
+              />
+              <ActionButton
+                icon={<FileText size={16} />}
+                label="Laporan PDF"
+                onClick={handlePdfExport}
+              />
+              <ActionButton
+                icon={<FileSpreadsheet size={16} />}
+                label="Ekspor Excel"
+                onClick={handleExcelExport}
+              />
             </div>
             <button
               onClick={handleWhatsAppShare}
@@ -288,10 +364,16 @@ export function SettingsSheet({
             >
               <MessageCircle size={16} /> Salin Ringkasan ke WhatsApp
             </button>
-            <input ref={fileInputRef} type="file" accept="application/json" className="hidden" onChange={handleFileChange} />
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="application/json"
+              className="hidden"
+              onChange={handleFileChange}
+            />
             {importMessage && (
               <p
-                className={`mt-2 text-center text-xs ${importMessage.type === 'success' ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}
+                className={`mt-2 text-center text-xs ${importMessage.type === "success" ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}`}
               >
                 {importMessage.text}
               </p>
@@ -299,10 +381,22 @@ export function SettingsSheet({
           </section>
 
           <section>
-            <h3 className="mb-2 text-sm font-semibold text-rose-950 dark:text-rose-50">Panduan</h3>
+            <h3 className="mb-2 text-sm font-semibold text-rose-950 dark:text-rose-50">
+              Panduan
+            </h3>
             <div className="grid grid-cols-1 gap-2">
-              <ActionButton icon={<BookOpen size={16} />} label="Panduan Lengkap Menstruasi" onClick={() => setFullGuideOpen(true)} fullWidth />
-              <ActionButton icon={<HelpCircle size={16} />} label="Panduan Backup & Restore" onClick={() => setBackupGuideOpen(true)} fullWidth />
+              <ActionButton
+                icon={<BookOpen size={16} />}
+                label="Panduan Lengkap Menstruasi"
+                onClick={() => setFullGuideOpen(true)}
+                fullWidth
+              />
+              <ActionButton
+                icon={<HelpCircle size={16} />}
+                label="Panduan Backup & Restore"
+                onClick={() => setBackupGuideOpen(true)}
+                fullWidth
+              />
             </div>
           </section>
 
@@ -311,33 +405,54 @@ export function SettingsSheet({
               onClick={() => setShowEducation((v) => !v)}
               className="flex w-full items-center gap-2 rounded-2xl border border-amber-200 bg-amber-50 p-3 text-left dark:border-amber-800 dark:bg-amber-950/40"
             >
-              <AlertTriangle size={16} className="shrink-0 text-amber-600 dark:text-amber-400" />
-              <span className="text-sm font-semibold text-amber-900 dark:text-amber-200">Edukasi Penting: Keamanan Data</span>
+              <AlertTriangle
+                size={16}
+                className="shrink-0 text-amber-600 dark:text-amber-400"
+              />
+              <span className="text-sm font-semibold text-amber-900 dark:text-amber-200">
+                Edukasi Penting: Keamanan Data
+              </span>
             </button>
             {showEducation && (
               <ul className="mt-2 space-y-2 text-xs text-rose-900/80 dark:text-stone-300">
                 <li>
-                  <span className="font-semibold text-rose-950 dark:text-rose-50">Hapus Cache / Site Data:</span> Menekan tombol "Clear Browsing
-                  Data" atau "Hapus Cache Website" di menu pengaturan Chrome/Safari akan menghapus seluruh riwayat menstruasi Anda.
+                  <span className="font-semibold text-rose-950 dark:text-rose-50">
+                    Hapus Cache / Site Data:
+                  </span>{" "}
+                  Menekan tombol "Clear Browsing Data" atau "Hapus Cache
+                  Website" di menu pengaturan Chrome/Safari akan menghapus
+                  seluruh riwayat menstruasi Anda.
                 </li>
                 <li>
-                  <span className="font-semibold text-rose-950 dark:text-rose-50">Amankan Data Berkala:</span> Gunakan fitur Salin ke Catatan
-                  WhatsApp atau Backup File JSON minimal satu bulan sekali.
+                  <span className="font-semibold text-rose-950 dark:text-rose-50">
+                    Amankan Data Berkala:
+                  </span>{" "}
+                  Gunakan fitur Salin ke Catatan WhatsApp atau Backup File JSON
+                  minimal satu bulan sekali.
                 </li>
                 <li>
-                  <span className="font-semibold text-rose-950 dark:text-rose-50">Ganti HP:</span> Sebelum berganti perangkat, unduh file .json
-                  melalui Backup, lalu Import file tersebut di HP baru Anda.
+                  <span className="font-semibold text-rose-950 dark:text-rose-50">
+                    Ganti HP:
+                  </span>{" "}
+                  Sebelum berganti perangkat, unduh file .json melalui Backup,
+                  lalu Import file tersebut di HP baru Anda.
                 </li>
                 <li>
-                  <span className="font-semibold text-rose-950 dark:text-rose-50">Kunci Memori (Storage Persistence):</span> Mekar Ayu otomatis
-                  meminta browser melindungi datamu dari penghapusan saat memori HP penuh — tidak perlu tindakan apa pun darimu.
+                  <span className="font-semibold text-rose-950 dark:text-rose-50">
+                    Kunci Memori (Storage Persistence):
+                  </span>{" "}
+                  Mekar Ayu otomatis meminta browser melindungi datamu dari
+                  penghapusan saat memori HP penuh — tidak perlu tindakan apa
+                  pun darimu.
                 </li>
               </ul>
             )}
           </section>
 
           <section>
-            <h3 className="mb-2 text-sm font-semibold text-rose-950 dark:text-rose-50">Kelola Data</h3>
+            <h3 className="mb-2 text-sm font-semibold text-rose-950 dark:text-rose-50">
+              Kelola Data
+            </h3>
             <button
               onClick={() => setConfirmDeleteOpen(true)}
               className="flex min-h-11 w-full items-center justify-center gap-2 rounded-2xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-semibold text-red-700 active:scale-95 hover:bg-red-100 transition dark:border-red-900 dark:bg-red-950/40 dark:text-red-400 dark:hover:bg-red-950/60"
@@ -346,25 +461,57 @@ export function SettingsSheet({
             </button>
           </section>
 
+          <section>
+            <h3 className="mb-2 text-sm font-semibold text-rose-950 dark:text-rose-50">
+              Dukung Pengembang
+            </h3>
+            <a
+              href="https://trakteer.id/mujahidinnn/tip"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex min-h-11 w-full items-center justify-center gap-2 rounded-2xl bg-amber-500 px-4 py-2.5 text-sm font-semibold text-white active:scale-95 hover:bg-amber-600 transition dark:bg-amber-600 dark:hover:bg-amber-500"
+            >
+              <Coffee size={16} /> Trakteer Developer
+            </a>
+          </section>
+
           <p className="text-center text-[11px] leading-relaxed text-rose-900/50 dark:text-stone-500">
-            Mekar Ayu adalah aplikasi 100% local-first. Tidak ada server, tidak ada akun, tidak ada pelacakan. Seluruh data hanya tersimpan di
+            Mekar Ayu adalah aplikasi 100% local-first. Tidak ada server, tidak
+            ada akun, tidak ada pelacakan. Seluruh data hanya tersimpan di
             perangkat ini.
           </p>
         </div>
       </Sheet>
 
-      <PwaInstallSheet open={pwaGuideOpen} onClose={() => setPwaGuideOpen(false)} />
-      <BackupGuideSheet open={backupGuideOpen} onClose={() => setBackupGuideOpen(false)} />
-      <FullGuideSheet open={fullGuideOpen} onClose={() => setFullGuideOpen(false)} />
-      <HistorySheet open={historyOpen} onClose={() => setHistoryOpen(false)} cycles={cycles} dailyLogs={dailyLogs} stats={stats} />
+      <PwaInstallSheet
+        open={pwaGuideOpen}
+        onClose={() => setPwaGuideOpen(false)}
+      />
+      <BackupGuideSheet
+        open={backupGuideOpen}
+        onClose={() => setBackupGuideOpen(false)}
+      />
+      <FullGuideSheet
+        open={fullGuideOpen}
+        onClose={() => setFullGuideOpen(false)}
+      />
+      <HistorySheet
+        open={historyOpen}
+        onClose={() => setHistoryOpen(false)}
+        cycles={cycles}
+        dailyLogs={dailyLogs}
+        stats={stats}
+      />
 
       <ConfirmDialog
         open={confirmInstallOpen}
         title="Install Mekar Ayu?"
         description={
           <>
-            Mekar Ayu akan terpasang di layar utama HP-mu seperti aplikasi biasa — lebih cepat dibuka dan bisa dipakai walau offline. Semua
-            datamu tetap 100% tersimpan lokal di perangkat ini, tidak ada yang berubah soal privasi.
+            Mekar Ayu akan terpasang di layar utama HP-mu seperti aplikasi biasa
+            — lebih cepat dibuka dan bisa dipakai walau offline. Semua datamu
+            tetap 100% tersimpan lokal di perangkat ini, tidak ada yang berubah
+            soal privasi.
           </>
         }
         confirmLabel="Install"
@@ -378,11 +525,19 @@ export function SettingsSheet({
         description={
           pendingImport && (
             <>
-              File ini berisi <span className="font-semibold text-rose-950 dark:text-rose-50">{pendingImport.cycleCount} siklus</span> dan{' '}
-              <span className="font-semibold text-rose-950 dark:text-rose-50">{pendingImport.logCount} catatan harian</span>. Melanjutkan akan{' '}
-              <span className="font-semibold text-red-600 dark:text-red-400">menghapus dan mengganti seluruh data saat ini</span> dengan isi file
-              ini. Tindakan ini
-              tidak bisa dibatalkan.
+              File ini berisi{" "}
+              <span className="font-semibold text-rose-950 dark:text-rose-50">
+                {pendingImport.cycleCount} siklus
+              </span>{" "}
+              dan{" "}
+              <span className="font-semibold text-rose-950 dark:text-rose-50">
+                {pendingImport.logCount} catatan harian
+              </span>
+              . Melanjutkan akan{" "}
+              <span className="font-semibold text-red-600 dark:text-red-400">
+                menghapus dan mengganti seluruh data saat ini
+              </span>{" "}
+              dengan isi file ini. Tindakan ini tidak bisa dibatalkan.
             </>
           )
         }
@@ -419,10 +574,13 @@ export function SettingsSheet({
         title="Hapus semua data?"
         description={
           <>
-            Seluruh riwayat siklus, gejala, dan catatan harian di perangkat ini akan{' '}
-            <span className="font-semibold text-red-600 dark:text-red-400">dihapus permanen dan tidak bisa dikembalikan</span>. Pastikan kamu
-            sudah membackup data
-            yang ingin disimpan sebelum melanjutkan.
+            Seluruh riwayat siklus, gejala, dan catatan harian di perangkat ini
+            akan{" "}
+            <span className="font-semibold text-red-600 dark:text-red-400">
+              dihapus permanen dan tidak bisa dikembalikan
+            </span>
+            . Pastikan kamu sudah membackup data yang ingin disimpan sebelum
+            melanjutkan.
           </>
         }
         confirmLabel="Ya, Hapus Semua"
@@ -449,7 +607,7 @@ function ActionButton({
     <button
       onClick={onClick}
       className={`flex min-h-11 items-center justify-center gap-2 rounded-2xl border border-rose-200 bg-white px-3 py-2.5 text-xs font-semibold text-rose-900 active:scale-95 hover:bg-rose-50 transition dark:border-stone-700 dark:bg-stone-800 dark:text-rose-100 dark:hover:bg-stone-700 ${
-        fullWidth ? 'w-full' : ''
+        fullWidth ? "w-full" : ""
       }`}
     >
       {icon} {label}
