@@ -78,30 +78,53 @@ export function PasswordDialog({ open, mode, title, description, error, busy, on
           {(localError || error) && <p className="text-xs font-medium text-red-600 dark:text-red-400">{localError || error}</p>}
         </div>
 
-        <div className="mt-5 flex gap-2">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="min-h-11 flex-1 rounded-2xl border border-rose-200 text-sm font-semibold text-rose-900 active:scale-95 transition hover:bg-rose-50 dark:border-stone-700 dark:text-rose-100 dark:hover:bg-stone-800"
-          >
-            Batal
-          </button>
-          <button
-            type="submit"
-            disabled={busy}
-            className="min-h-11 flex-1 rounded-2xl bg-rose-500 text-sm font-semibold text-white transition active:scale-95 hover:bg-rose-600 disabled:opacity-60"
-          >
-            {busy ? 'Memproses…' : mode === 'set' ? 'Kunci & Unduh' : 'Buka Kunci'}
-          </button>
-        </div>
+        {mode === 'set' && onSkip ? (
+          // Both export paths are legitimate — a password is recommended, not required — so
+          // "without a password" gets a full button here too, not a demoted text link. Only
+          // Cancel (abandoning the export entirely) is the actually-rare path, so that's what
+          // gets pushed down to a plain text link below.
+          <div className="mt-5 space-y-2">
+            <button
+              type="submit"
+              disabled={busy}
+              className="min-h-11 w-full rounded-2xl bg-rose-500 text-sm font-semibold text-white transition active:scale-95 hover:bg-rose-600 disabled:opacity-60"
+            >
+              {busy ? 'Memproses…' : 'Kunci & Unduh'}
+            </button>
+            <button
+              type="button"
+              onClick={onSkip}
+              className="min-h-11 w-full rounded-2xl border border-rose-200 text-sm font-semibold text-rose-900 active:scale-95 transition hover:bg-rose-50 dark:border-stone-700 dark:text-rose-100 dark:hover:bg-stone-800"
+            >
+              Unduh Tanpa Sandi
+            </button>
+          </div>
+        ) : (
+          <div className="mt-5 flex gap-2">
+            <button
+              type="button"
+              onClick={onCancel}
+              className="min-h-11 flex-1 rounded-2xl border border-rose-200 text-sm font-semibold text-rose-900 active:scale-95 transition hover:bg-rose-50 dark:border-stone-700 dark:text-rose-100 dark:hover:bg-stone-800"
+            >
+              Batal
+            </button>
+            <button
+              type="submit"
+              disabled={busy}
+              className="min-h-11 flex-1 rounded-2xl bg-rose-500 text-sm font-semibold text-white transition active:scale-95 hover:bg-rose-600 disabled:opacity-60"
+            >
+              {busy ? 'Memproses…' : 'Buka Kunci'}
+            </button>
+          </div>
+        )}
 
         {mode === 'set' && onSkip && (
           <button
             type="button"
-            onClick={onSkip}
-            className="mt-2 w-full text-center text-xs font-medium text-rose-900/60 underline-offset-2 hover:underline dark:text-stone-400"
+            onClick={onCancel}
+            className="mt-2 w-full text-center text-xs font-medium text-rose-900/60 hover:underline dark:text-stone-400"
           >
-            Lewati, unduh tanpa kunci
+            Batal
           </button>
         )}
       </form>
