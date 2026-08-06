@@ -1,5 +1,5 @@
 import { db } from '../db/schema';
-import { rebuildCyclesFromLogs } from './cycleMath';
+import { BLEEDING_INTENSITIES, rebuildCyclesFromLogs } from './cycleMath';
 
 let chain: Promise<void> = Promise.resolve();
 
@@ -18,8 +18,12 @@ export function syncCyclesTable(): Promise<void> {
 }
 
 async function rebuildCyclesTable(): Promise<void> {
-  const dailyLogs = await db.dailyLogs.toArray();
-  const { cycles } = rebuildCyclesFromLogs(dailyLogs);
+  // Cycle rebuilds only ever look at bleeding-flagged days (see groupBleedingSegments), which
+  // are a fraction of total entries once someone's been logging daily mood/symptoms for a
+  // while — querying the flowIntensity index instead of toArray() skips shipping every
+  // non-bleeding row's symptoms/moods/notes across the IndexedDB boundary for nothing.
+  const bleedingLogs = await db.dailyLogs.where('flowIntensity').anyOf([...BLEEDING_INTENSITIES]).toArray();
+  const { cycles } = rebuildCyclesFromLogs(bleedingLogs);
 
   await db.transaction('rw', db.cycles, async () => {
     await db.cycles.clear();

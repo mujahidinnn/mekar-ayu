@@ -2,7 +2,7 @@ import { addDays, differenceInCalendarDays, format, parseISO } from 'date-fns';
 import type { CycleEntry, DailyLog } from '../db/schema';
 import type { PhaseKey } from '../data/phases';
 
-const BLEEDING_INTENSITIES = new Set(['heavy', 'medium', 'light', 'spotting']);
+export const BLEEDING_INTENSITIES = new Set(['heavy', 'medium', 'light', 'spotting']);
 // 'light' still counts as a genuine period day (just a lighter flow); only pure 'spotting' —
 // with no heavier day anywhere in the streak — is treated as non-period, intermenstrual bleeding.
 const TRUE_PERIOD_INTENSITIES = new Set(['heavy', 'medium', 'light']);
