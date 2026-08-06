@@ -6,7 +6,10 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'autoUpdate',
+      // 'prompt' leaves the new SW in the `waiting` state instead of activating it the
+      // instant it's downloaded — the UpdateToast in App.tsx asks the user before any
+      // in-flight IndexedDB write could be interrupted by a controller swap.
+      registerType: 'prompt',
       includeAssets: ['favicon.svg', 'apple-touch-icon.png', 'pwa-192x192.png', 'pwa-512x512.png'],
       manifest: {
         id: '/',

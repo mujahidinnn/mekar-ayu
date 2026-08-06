@@ -7,7 +7,9 @@ import { BottomSheetLogEditor } from './components/BottomSheetLogEditor';
 import { EducationCard } from './components/EducationCard';
 import { RedFlagBanner } from './components/RedFlagBanner';
 import { SettingsSheet } from './components/SettingsSheet';
+import { UpdateToast } from './components/UpdateToast';
 import { useCycleAnalytics } from './hooks/useCycleAnalytics';
+import { usePwaUpdate } from './hooks/usePwaUpdate';
 import { useStorageMonitor } from './hooks/useStorageMonitor';
 import { useSyncStatus } from './hooks/useSyncStatus';
 import { useTheme } from './hooks/useTheme';
@@ -22,6 +24,7 @@ function App() {
   const { stats, cycles, dailyLogs, isLoading } = useCycleAnalytics();
   const { usageKB, recordCount, isPersisted, refreshStorage } = useStorageMonitor();
   const { preference: themePreference, setTheme } = useTheme();
+  const { needRefresh, offlineReady, applyUpdate, dismissNeedRefresh, dismissOfflineReady } = usePwaUpdate();
 
   // navigator.storage.estimate() has no native "changed" event, so the header's storage
   // size is kept fresh by re-checking right after each save finishes (isSaving true -> false).
@@ -85,6 +88,14 @@ function App() {
           <Plus size={26} />
         </button>
       </div>
+
+      <UpdateToast
+        needRefresh={needRefresh}
+        offlineReady={offlineReady}
+        onApplyUpdate={applyUpdate}
+        onDismissNeedRefresh={dismissNeedRefresh}
+        onDismissOfflineReady={dismissOfflineReady}
+      />
 
       <BottomSheetLogEditor dateStr={selectedDate} onClose={() => setSelectedDate(null)} />
 
