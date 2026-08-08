@@ -50,10 +50,21 @@ export default defineConfig({
         // available offline once fetched once, via the runtime caching rule below.
         // og-image.png and screenshot-narrow.png are only ever fetched by social-link crawlers
         // and Chrome's install-prompt UI, never by the app itself, so neither belongs offline.
-        globIgnores: ['**/pdf-*.js', '**/excel-*.js', '**/html2canvas*.js', '**/purify*.js', '**/og-image.png', '**/screenshot-narrow.png'],
+        // index.es-*.js is jsPDF's own core-js/canvg chunk, split out by Rollup under that name
+        // rather than a "pdf-" prefix; it's only reachable via the dynamic import in pdf-*.js,
+        // so it belongs in the same lazy, on-demand bucket as the rest of the export libs.
+        globIgnores: [
+          '**/pdf-*.js',
+          '**/excel-*.js',
+          '**/html2canvas*.js',
+          '**/purify*.js',
+          '**/index.es-*.js',
+          '**/og-image.png',
+          '**/screenshot-narrow.png',
+        ],
         runtimeCaching: [
           {
-            urlPattern: /\/assets\/(pdf|excel|html2canvas|purify)[^/]*\.js$/,
+            urlPattern: /\/assets\/(pdf|excel|html2canvas|purify|index\.es)[^/]*\.js$/,
             handler: 'CacheFirst',
             options: {
               cacheName: 'mekarayu-export-libs',

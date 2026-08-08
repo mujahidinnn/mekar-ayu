@@ -1,5 +1,5 @@
 import type { CycleEntry, DailyLog } from '../../db/schema';
-import { SYMPTOM_OPTIONS, MOOD_OPTIONS } from '../../data/phases';
+import { SYMPTOM_OPTIONS, MOOD_OPTIONS, FLOW_OPTIONS } from '../../data/phases';
 
 function labelFor(list: readonly { key: string; label: string }[], key: string): string {
   return list.find((o) => o.key === key)?.label ?? key;
@@ -29,7 +29,8 @@ ${
           .map((log) => {
             const symptoms = log.symptoms.map((s) => labelFor(SYMPTOM_OPTIONS, s)).join(', ') || '-';
             const moods = log.moods.map((m) => labelFor(MOOD_OPTIONS, m)).join(', ') || '-';
-            return `• ${log.date}: Flow (${log.flowIntensity || 'tidak ada'}), Gejala (${symptoms}), Mood (${moods}), Catatan: ${log.notes || '-'}`;
+            const flow = log.flowIntensity ? labelFor(FLOW_OPTIONS, log.flowIntensity) : 'tidak ada';
+            return `• ${log.date}: Flow (${flow}), Gejala (${symptoms}), Mood (${moods}), Catatan: ${log.notes || '-'}`;
           })
           .join('\n')
       : 'Belum ada catatan harian pada bulan ini.'

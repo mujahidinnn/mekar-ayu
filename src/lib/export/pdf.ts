@@ -2,7 +2,7 @@ import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import type { CycleEntry, DailyLog } from '../../db/schema';
 import type { CycleStats } from '../cycleMath';
-import { SYMPTOM_OPTIONS, MOOD_OPTIONS } from '../../data/phases';
+import { SYMPTOM_OPTIONS, MOOD_OPTIONS, FLOW_OPTIONS } from '../../data/phases';
 
 function labelFor(list: readonly { key: string; label: string }[], key: string): string {
   return list.find((o) => o.key === key)?.label ?? key;
@@ -105,7 +105,7 @@ export function generateMedicalReportPDF(cycles: CycleEntry[], dailyLogs: DailyL
       head: [['Tanggal', 'Flow', 'Gejala', 'Mood', 'Catatan']],
       body: logsWithData.map((l) => [
         l.date,
-        l.flowIntensity || '-',
+        l.flowIntensity ? labelFor(FLOW_OPTIONS, l.flowIntensity) : '-',
         l.symptoms.map((s) => labelFor(SYMPTOM_OPTIONS, s)).join(', ') || '-',
         l.moods.map((m) => labelFor(MOOD_OPTIONS, m)).join(', ') || '-',
         l.notes || '-',
