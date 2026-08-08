@@ -46,7 +46,7 @@ export function FullGuideSheet({ open, onClose }: FullGuideSheetProps) {
           </span>
           <p className="text-sm leading-relaxed text-rose-900/80 dark:text-stone-300">
             Menurut ACOG (American College of Obstetricians and Gynecologists), siklus menstruasi sebaiknya dipantau sebagai{' '}
-            <span className="font-semibold text-rose-950 dark:text-rose-50">tanda vital</span> — sama pentingnya dengan tekanan darah atau detak
+            <span className="font-semibold text-rose-950 dark:text-rose-50">tanda vital</span>, sama pentingnya dengan tekanan darah atau detak
             jantung. Perubahan pada panjang siklus atau durasi menstruasi bisa menjadi indikator awal kondisi seperti PCOS, gangguan tiroid, atau
             endometriosis.
           </p>

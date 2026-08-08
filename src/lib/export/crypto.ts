@@ -1,4 +1,4 @@
-// AES-256-GCM with a PBKDF2-derived key, entirely via the browser's native Web Crypto API —
+// AES-256-GCM with a PBKDF2-derived key, entirely via the browser's native Web Crypto API:
 // no extra dependency, and it never leaves the device (consistent with the rest of the app).
 const PBKDF2_ITERATIONS = 210_000; // OWASP 2023 minimum recommendation for PBKDF2-HMAC-SHA256
 

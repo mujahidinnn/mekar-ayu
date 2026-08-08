@@ -11,7 +11,7 @@ interface ConfirmDialogProps {
   onCancel: () => void;
 }
 
-// A centered modal on purpose — every other confirmation in this app is a bottom sheet, so a
+// A centered modal on purpose: every other confirmation in this app is a bottom sheet, so a
 // destructive/irreversible action getting a different, more deliberate shape is itself a signal.
 export function ConfirmDialog({
   open,

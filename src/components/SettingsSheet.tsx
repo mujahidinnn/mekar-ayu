@@ -12,6 +12,7 @@ import {
   FileText,
   HelpCircle,
   Loader2,
+  Lock,
   MessageCircle,
   Monitor,
   Moon,
@@ -29,6 +30,7 @@ import { PwaInstallSheet } from "./PwaInstallSheet";
 import { BackupGuideSheet } from "./BackupGuideSheet";
 import { HistorySheet } from "./HistorySheet";
 import { FullGuideSheet } from "./FullGuideSheet";
+import { PrivacyPolicySheet } from "./PrivacyPolicySheet";
 import type { CycleEntry, DailyLog } from "../db/schema";
 import type { CycleStats } from "../lib/cycleMath";
 import {
@@ -90,6 +92,7 @@ export function SettingsSheet({
   const [pwaGuideOpen, setPwaGuideOpen] = useState(false);
   const [backupGuideOpen, setBackupGuideOpen] = useState(false);
   const [fullGuideOpen, setFullGuideOpen] = useState(false);
+  const [privacyPolicyOpen, setPrivacyPolicyOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [confirmInstallOpen, setConfirmInstallOpen] = useState(false);
@@ -266,7 +269,7 @@ export function SettingsSheet({
   const handleConfirmInstall = async () => {
     setConfirmInstallOpen(false);
     if (!isInstallable) {
-      // Browser doesn't support the native install prompt (e.g. iOS Safari) — fall back
+      // Browser doesn't support the native install prompt (e.g. iOS Safari), so fall back
       // to the manual step-by-step guide instead of pretending a button did something.
       setPwaGuideOpen(true);
       return;
@@ -443,6 +446,12 @@ export function SettingsSheet({
                 onClick={() => setBackupGuideOpen(true)}
                 fullWidth
               />
+              <ActionButton
+                icon={<Lock size={16} />}
+                label="Kebijakan Privasi"
+                onClick={() => setPrivacyPolicyOpen(true)}
+                fullWidth
+              />
             </div>
           </section>
 
@@ -488,8 +497,8 @@ export function SettingsSheet({
                     Kunci Memori (Storage Persistence):
                   </span>{" "}
                   Mekar Ayu otomatis meminta browser melindungi datamu dari
-                  penghapusan saat memori HP penuh — tidak perlu tindakan apa
-                  pun darimu.
+                  penghapusan saat memori HP penuh, jadi tidak perlu tindakan
+                  apa pun darimu.
                 </li>
               </ul>
             )}
@@ -541,6 +550,10 @@ export function SettingsSheet({
         open={fullGuideOpen}
         onClose={() => setFullGuideOpen(false)}
       />
+      <PrivacyPolicySheet
+        open={privacyPolicyOpen}
+        onClose={() => setPrivacyPolicyOpen(false)}
+      />
       <HistorySheet
         open={historyOpen}
         onClose={() => setHistoryOpen(false)}
@@ -554,8 +567,8 @@ export function SettingsSheet({
         title="Install Mekar Ayu?"
         description={
           <>
-            Mekar Ayu akan terpasang di layar utama HP-mu seperti aplikasi biasa
-            — lebih cepat dibuka dan bisa dipakai walau offline. Semua datamu
+            Mekar Ayu akan terpasang di layar utama HP-mu seperti aplikasi biasa,
+            jadi lebih cepat dibuka dan bisa dipakai walau offline. Semua datamu
             tetap 100% tersimpan lokal di perangkat ini, tidak ada yang berubah
             soal privasi.
           </>
@@ -597,7 +610,7 @@ export function SettingsSheet({
         open={exportLockOpen}
         mode="set"
         title="Kunci file backup?"
-        description="Tambahkan kata sandi supaya isi file ini tidak bisa dibaca orang lain kalau tersimpan di Drive, email, atau HP yang hilang. Simpan baik-baik — tanpa kata sandi ini, file tidak bisa dipulihkan."
+        description="Tambahkan kata sandi supaya isi file ini tidak bisa dibaca orang lain kalau tersimpan di Drive, email, atau HP yang hilang. Simpan baik-baik karena tanpa kata sandi ini, file tidak bisa dipulihkan."
         busy={exportBusy}
         onSubmit={handleExportSubmit}
         onCancel={() => setExportLockOpen(false)}

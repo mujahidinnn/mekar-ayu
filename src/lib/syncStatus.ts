@@ -1,10 +1,10 @@
 // Tracks whether a write to IndexedDB is currently in flight, so the UI can show a brief
-// "Menyinkronkan…" indicator the way Docs/Sheets does — not tied to browser storage-persistence
+// "Menyinkronkan…" indicator the way Docs/Sheets does. Not tied to browser storage-persistence
 // permission, which many browsers never auto-grant and would otherwise show forever.
 //
 // The indicator only appears after SHOW_DELAY_MS of a write still being in flight. Ordinary
-// local IndexedDB writes finish in a few ms, well under that delay, so it never mounts for them
-// — this is what keeps the header/sheet from visibly reflowing on every keystroke. It's reserved
+// local IndexedDB writes finish in a few ms, well under that delay, so it never mounts for them;
+// this is what keeps the header/sheet from visibly reflowing on every keystroke. It's reserved
 // for genuinely slow operations (large import/export). Once shown, it stays up for at least
 // MIN_VISIBLE_MS so it doesn't flash on/off before a single paint happens.
 type Listener = () => void;

@@ -25,7 +25,7 @@ export function BackupGuideSheet({ open, onClose }: BackupGuideSheetProps) {
           <ol className="ml-11 list-decimal space-y-1 text-sm text-rose-900/70 dark:text-stone-300">
             <li>Buka Pengaturan → ketuk "Backup JSON".</li>
             <li>Pilih mau dikunci dengan kata sandi atau tidak, lalu file otomatis terunduh ke folder Download/File HP-mu, contoh: mekarayu-backup-2026-07-29.json.</li>
-            <li>Pindahkan file itu ke tempat aman — Google Drive pribadi, email ke dirimu sendiri, atau simpan di HP baru.</li>
+            <li>Pindahkan file itu ke tempat aman, misalnya Google Drive pribadi, email ke dirimu sendiri, atau simpan di HP baru.</li>
           </ol>
         </section>
 
@@ -40,7 +40,7 @@ export function BackupGuideSheet({ open, onClose }: BackupGuideSheetProps) {
             <li>Buka Pengaturan → ketuk "Pulihkan JSON".</li>
             <li>Pilih file backup yang sesuai (misalnya setelah ganti HP).</li>
             <li>Kalau file itu dikunci, masukkan kata sandi yang dipakai saat membuatnya.</li>
-            <li>Konfirmasi saat diminta — proses ini akan mengganti seluruh data yang ada saat ini.</li>
+            <li>Konfirmasi saat diminta. Proses ini akan mengganti seluruh data yang ada saat ini.</li>
           </ol>
         </section>
 
@@ -55,9 +55,9 @@ export function BackupGuideSheet({ open, onClose }: BackupGuideSheetProps) {
         <div className="flex gap-3 rounded-2xl bg-rose-50 p-3 dark:bg-stone-800">
           <FolderLock size={18} className="mt-0.5 shrink-0 text-rose-500 dark:text-rose-400" />
           <p className="text-xs leading-relaxed text-rose-900/70 dark:text-stone-300">
-            <span className="font-semibold text-rose-950 dark:text-rose-50">Tanpa kata sandi, file ini tidak terenkripsi</span> — isinya berupa
+            <span className="font-semibold text-rose-950 dark:text-rose-50">Tanpa kata sandi, file ini tidak terenkripsi</span>, isinya berupa
             teks biasa yang bisa dibaca siapa saja yang membukanya. Pilih "Kunci file backup" saat ekspor kalau mau isinya terenkripsi, lalu
-            simpan kata sandinya baik-baik — hilang kata sandi berarti file itu tidak bisa dipulihkan lagi.
+            simpan kata sandinya baik-baik karena hilang kata sandi berarti file itu tidak bisa dipulihkan lagi.
           </p>
         </div>
       </div>

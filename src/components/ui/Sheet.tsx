@@ -42,7 +42,7 @@ export function Sheet({ open, onClose, title, children }: SheetProps) {
     panel.style.transform = y > 0 ? `translateY(${y}px)` : '';
   };
 
-  // Only the handle/header bar is draggable — the content below keeps its normal scroll,
+  // Only the handle/header bar is draggable; the content below keeps its normal scroll,
   // and taps on the close button inside the header are excluded so they still register as clicks.
   const handlePointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
     if ((e.target as HTMLElement).closest('button')) return;

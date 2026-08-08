@@ -46,7 +46,7 @@ function PasswordField({
   );
 }
 
-// Same centered-modal treatment as ConfirmDialog — entering/handling a password is a
+// Same centered-modal treatment as ConfirmDialog: entering/handling a password is a
 // deliberate, security-relevant action, not a routine bottom-sheet choice.
 export function PasswordDialog({ open, mode, title, description, error, busy, onSubmit, onCancel, onSkip }: PasswordDialogProps) {
   const [password, setPassword] = useState('');
@@ -96,7 +96,7 @@ export function PasswordDialog({ open, mode, title, description, error, busy, on
         </div>
 
         {mode === 'set' && onSkip ? (
-          // Both export paths are legitimate — a password is recommended, not required — so
+          // Both export paths are legitimate (a password is recommended, not required), so
           // "without a password" and "Batal" get equal-weight buttons here, not a demoted text
           // link. Only the locked/recommended path stands out, as the standalone primary button.
           <div className="mt-5 space-y-2">

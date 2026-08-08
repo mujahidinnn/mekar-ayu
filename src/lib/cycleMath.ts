@@ -3,8 +3,8 @@ import type { CycleEntry, DailyLog } from '../db/schema';
 import type { PhaseKey } from '../data/phases';
 
 export const BLEEDING_INTENSITIES = new Set(['heavy', 'medium', 'light', 'spotting']);
-// 'light' still counts as a genuine period day (just a lighter flow); only pure 'spotting' —
-// with no heavier day anywhere in the streak — is treated as non-period, intermenstrual bleeding.
+// 'light' still counts as a genuine period day (just a lighter flow); only pure 'spotting',
+// with no heavier day anywhere in the streak, is treated as non-period, intermenstrual bleeding.
 const TRUE_PERIOD_INTENSITIES = new Set(['heavy', 'medium', 'light']);
 
 const DEFAULT_CYCLE_LENGTH = 28;
@@ -84,7 +84,7 @@ function groupBleedingSegments(sortedLogs: DailyLog[]): BleedingSegment[] {
 
 /**
  * Rebuilds cycle (period) history from raw daily logs. A bleeding streak that never includes
- * a light/medium/heavy day — pure spotting throughout — is classified as intermenstrual
+ * a light/medium/heavy day (pure spotting throughout) is classified as intermenstrual
  * spotting rather than a new cycle, regardless of how long it's been since the last period.
  * That's what lets a stray spotting day mid-cycle surface as a red flag instead of silently
  * corrupting cycle-length stats by being counted as a (very short) new cycle.
@@ -155,7 +155,7 @@ export function computeCycleStats(
 
   const predictedNextPeriodStart = lastPeriodStart ? format(addDays(parseISO(lastPeriodStart), avgCycleLength), 'yyyy-MM-dd') : null;
 
-  // ACOG: ovulation occurs ~14 days before the next menses starts — computed directly as a
+  // ACOG: ovulation occurs ~14 days before the next menses starts. Computed directly as a
   // calendar offset from the predicted next period, not from the last period start, to avoid
   // off-by-one drift between "days before next period" and a 1-indexed day-of-cycle number.
   const ovulationDate = predictedNextPeriodStart ? format(addDays(parseISO(predictedNextPeriodStart), -14), 'yyyy-MM-dd') : null;

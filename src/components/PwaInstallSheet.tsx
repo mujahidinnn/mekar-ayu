@@ -63,7 +63,7 @@ export function PwaInstallSheet({ open, onClose }: PwaInstallSheetProps) {
     <Sheet open={open} onClose={onClose} title="Cara Pasang ke Layar Utama">
       <div className="space-y-5 pb-4">
         <p className="text-sm text-rose-900/70 dark:text-stone-300">
-          Pasang Mekar Ayu ke layar utama HP-mu agar bisa dibuka seperti aplikasi biasa — lebih cepat, bisa dipakai offline, dan tetap 100%
+          Pasang Mekar Ayu ke layar utama HP-mu agar bisa dibuka seperti aplikasi biasa, lebih cepat, bisa dipakai offline, dan tetap 100%
           tersimpan lokal di perangkatmu.
         </p>
 
@@ -107,7 +107,7 @@ export function PwaInstallSheet({ open, onClose }: PwaInstallSheetProps) {
         </ol>
 
         <p className="rounded-2xl bg-amber-50 p-3 text-xs text-amber-800 dark:bg-amber-950/40 dark:text-amber-300">
-          Tampilan menu bisa sedikit berbeda tergantung versi browser. Fitur ini butuh Safari (iPhone) atau Chrome/Edge (Android) — beberapa
+          Tampilan menu bisa sedikit berbeda tergantung versi browser. Fitur ini butuh Safari (iPhone) atau Chrome/Edge (Android); beberapa
           browser lain mungkin tidak mendukung "Add to Home Screen".
         </p>
       </div>
