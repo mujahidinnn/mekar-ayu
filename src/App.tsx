@@ -17,11 +17,25 @@ import { useTheme } from './hooks/useTheme';
 
 const MIN_SPLASH_MS = 400;
 const ONBOARDED_KEY = 'mekarayu_onboarded';
+const TABS: Tab[] = ['home', 'calendar', 'stats', 'more'];
+
+const readTab = (): Tab => {
+  const hash = location.hash.slice(1) as Tab;
+  return TABS.includes(hash) ? hash : 'home';
+};
+const setTab = (tab: Tab) => {
+  location.hash = tab;
+};
 
 function App() {
   const [visibleMonth, setVisibleMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
-  const [tab, setTab] = useState<Tab>('home');
+  const [tab, setTabState] = useState<Tab>(readTab);
+  useEffect(() => {
+    const onHashChange = () => setTabState(readTab());
+    window.addEventListener('hashchange', onHashChange);
+    return () => window.removeEventListener('hashchange', onHashChange);
+  }, []);
   const [onboarded, setOnboarded] = useState(() => localStorage.getItem(ONBOARDED_KEY) === '1');
 
   const { stats, cycles, dailyLogs, isLoading } = useCycleAnalytics();
