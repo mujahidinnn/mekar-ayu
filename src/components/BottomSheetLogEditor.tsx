@@ -3,6 +3,8 @@ import { format, parseISO } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
 import { Sheet } from './ui/Sheet';
 import { Chip } from './ui/Chip';
+import { MoodFace } from './MoodFace';
+import { SymptomIcon } from './SymptomIcon';
 import { db, type FlowIntensity } from '../db/schema';
 import { syncCyclesTable } from '../lib/cycleSync';
 import { withSync } from '../lib/syncStatus';
@@ -22,18 +24,15 @@ interface LogFields {
 
 const SAVE_DEBOUNCE_MS = 350;
 
-const FLOW_ACTIVE_CLASS = 'border-rose-400 bg-rose-400 text-white';
+const FLOW_ACTIVE_CLASS = 'bg-[#FF8A80] text-[#181818]';
 
 export function BottomSheetLogEditor({ dateStr, onClose }: BottomSheetLogEditorProps) {
-  const [flowIntensity, setFlowIntensity] = useState<FlowIntensity>('none');
+  const [flowIntensity, setFlowIntensity] = useState<FlowIntensity>('n');
   const [symptoms, setSymptoms] = useState<string[]>([]);
   const [moods, setMoods] = useState<string[]>([]);
   const [notes, setNotes] = useState('');
   const [saved, setSaved] = useState(false);
 
-  // Rapid taps (several symptom/mood chips in a row) should feel instant in the UI but
-  // shouldn't each cause their own IndexedDB round-trip. Pending writes are coalesced here
-  // and committed once the user pauses, or immediately when the sheet closes / date changes.
   const pendingRef = useRef<{ dateStr: string; fields: LogFields; flowChanged: boolean } | null>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -49,7 +48,7 @@ export function BottomSheetLogEditor({ dateStr, onClose }: BottomSheetLogEditorP
     await withSync(() =>
       db.dailyLogs.put({
         date: pending.dateStr,
-        flowIntensity: pending.fields.flowIntensity === 'none' ? undefined : pending.fields.flowIntensity,
+        flowIntensity: pending.fields.flowIntensity === 'n' ? undefined : pending.fields.flowIntensity,
         symptoms: pending.fields.symptoms,
         moods: pending.fields.moods,
         notes: pending.fields.notes || undefined,
@@ -57,9 +56,6 @@ export function BottomSheetLogEditor({ dateStr, onClose }: BottomSheetLogEditorP
       }),
     );
 
-    // Cycle stats are a derived cache rebuilt from the *entire* log history, which is real
-    // I/O (full table read + clear + bulk write). Running it in the background instead of
-    // blocking on it here is what keeps a single flow tap from feeling slow to save.
     if (pending.flowChanged) {
       withSync(() => syncCyclesTable()).catch((err) => console.error('Gagal menyinkronkan siklus', err));
     }
@@ -68,13 +64,11 @@ export function BottomSheetLogEditor({ dateStr, onClose }: BottomSheetLogEditorP
   useEffect(() => {
     if (!dateStr) return;
     let cancelled = false;
-    // Switching to a different day (or closing) must flush whatever was pending for the
-    // previous day first, otherwise a fast tap-then-swipe could drop the last edit.
     commitPending();
     (async () => {
       const existing = await db.dailyLogs.get(dateStr);
       if (cancelled) return;
-      setFlowIntensity(existing?.flowIntensity ?? 'none');
+      setFlowIntensity(existing?.flowIntensity ?? 'n');
       setSymptoms(existing?.symptoms ?? []);
       setMoods(existing?.moods ?? []);
       setNotes(existing?.notes ?? '');
@@ -115,20 +109,20 @@ export function BottomSheetLogEditor({ dateStr, onClose }: BottomSheetLogEditorP
     <Sheet open={!!dateStr} onClose={handleClose} title={title}>
       <div className="space-y-6 pb-4">
         <section>
-          <h3 className="mb-2 text-sm font-semibold text-rose-950 dark:text-rose-50">Flow / Menstruasi</h3>
+          <h3 className="mb-2 text-sm font-bold">Aliran haid</h3>
           <div className="flex flex-wrap gap-2">
             {FLOW_OPTIONS.map((opt) => (
               <button
                 key={opt.key}
                 onClick={() => {
-                  const next = flowIntensity === opt.key ? 'none' : opt.key;
+                  const next = flowIntensity === opt.key ? 'n' : opt.key;
                   setFlowIntensity(next);
                   persist({ flowIntensity: next, symptoms, moods, notes }, true);
                 }}
-                className={`min-h-11 rounded-full border px-4 py-2 text-sm font-medium transition active:scale-95 ${
+                className={`min-h-11 rounded-full px-4 py-2 text-sm font-semibold transition active:scale-95 ${
                   flowIntensity === opt.key
                     ? FLOW_ACTIVE_CLASS
-                    : 'border-rose-200 bg-white text-rose-900 hover:bg-rose-50 dark:border-stone-700 dark:bg-stone-800 dark:text-rose-100 dark:hover:bg-stone-700'
+                    : 'bg-[var(--surface)] text-[var(--ink)]'
                 }`}
               >
                 {opt.label}
@@ -138,15 +132,15 @@ export function BottomSheetLogEditor({ dateStr, onClose }: BottomSheetLogEditorP
         </section>
 
         <section>
-          <h3 className="mb-2 text-sm font-semibold text-rose-950 dark:text-rose-50">Gejala</h3>
+          <h3 className="mb-2 text-sm font-bold">Sinyal tubuh</h3>
           <div className="flex flex-wrap gap-2">
             {SYMPTOM_OPTIONS.map((opt) => (
               <Chip
                 key={opt.key}
                 label={opt.label}
-                emoji={opt.emoji}
+                icon={<SymptomIcon symptom={opt.key} />}
                 active={symptoms.includes(opt.key)}
-                activeClassName={opt.key === 'severe_pain' ? 'border-red-600 bg-red-600 text-white' : undefined}
+                activeClassName={opt.key === 'sp' ? 'bg-red-600 text-white' : undefined}
                 onClick={() => {
                   const next = toggle(symptoms, opt.key);
                   setSymptoms(next);
@@ -158,42 +152,48 @@ export function BottomSheetLogEditor({ dateStr, onClose }: BottomSheetLogEditorP
         </section>
 
         <section>
-          <h3 className="mb-2 text-sm font-semibold text-rose-950 dark:text-rose-50">Mood</h3>
+          <h3 className="mb-2 text-sm font-bold">Mood</h3>
           <div className="flex flex-wrap gap-2">
             {MOOD_OPTIONS.map((opt) => (
-              <Chip
+              <button
                 key={opt.key}
-                label={opt.label}
-                emoji={opt.emoji}
-                active={moods.includes(opt.key)}
+                type="button"
+                aria-pressed={moods.includes(opt.key)}
                 onClick={() => {
                   const next = toggle(moods, opt.key);
                   setMoods(next);
                   persist({ flowIntensity, symptoms, moods: next, notes });
                 }}
-              />
+                className={`flex min-h-11 items-center gap-2 rounded-full py-1.5 pl-1.5 pr-4 text-sm font-semibold transition active:scale-95 ${
+                  moods.includes(opt.key) ? 'bg-[var(--ink)] text-white dark:text-[#181818]' : 'bg-[var(--surface)] text-[var(--ink)]'
+                }`}
+              >
+                <MoodFace mood={opt.key} size={30} />
+                {opt.label}
+              </button>
             ))}
           </div>
         </section>
 
         <section>
-          <h3 className="mb-2 text-sm font-semibold text-rose-950 dark:text-rose-50">Catatan</h3>
+          <h3 className="mb-2 text-sm font-bold">Catatan</h3>
           <textarea
             value={notes}
             onChange={(e) => {
               setNotes(e.target.value);
               persist({ flowIntensity, symptoms, moods, notes: e.target.value });
             }}
-            placeholder="Tulis catatan tambahan di sini..."
+            placeholder="Ada cerita apa hari ini? Tulis di sini..."
             rows={3}
-            className="w-full rounded-2xl border border-rose-200 p-3 text-sm text-rose-950 placeholder:text-rose-300 focus:border-rose-400 focus:outline-none dark:border-stone-700 dark:bg-stone-800 dark:text-rose-50 dark:placeholder:text-stone-500"
+            className="w-full rounded-2xl bg-[var(--surface)] p-3 text-sm text-[var(--ink)] placeholder:text-[var(--muted)] focus:outline-none focus:ring-2 focus:ring-[var(--ink)]"
           />
         </section>
 
         <p className={`text-center text-xs text-emerald-600 transition-opacity dark:text-emerald-400 ${saved ? 'opacity-100' : 'opacity-0'}`}>
-          Tersimpan otomatis ✓
+          Tersimpan otomatis
         </p>
       </div>
     </Sheet>
   );
 }
+

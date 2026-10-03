@@ -9,18 +9,18 @@ export function RedFlagBanner({ flags }: RedFlagBannerProps) {
   if (flags.length === 0) return null;
 
   return (
-    <div className="mx-4 rounded-2xl border border-amber-300 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950/40">
+    <div className="rounded-[24px] bg-[#FFE3A3] p-5 text-[#181818]">
       <div className="flex items-start gap-3">
-        <AlertTriangle size={20} className="mt-0.5 shrink-0 text-amber-600 dark:text-amber-400" />
+        <AlertTriangle size={20} className="mt-0.5 shrink-0" />
         <div>
-          <p className="text-sm font-semibold text-amber-900 dark:text-amber-200">Perlu diperhatikan</p>
-          <ul className="mt-1 space-y-1 text-sm text-amber-800 dark:text-amber-300">
+          <p className="text-sm font-bold">Tubuhmu lagi kasih sinyal</p>
+          <ul className="mt-1 space-y-1 text-sm">
             {flags.map((f) => (
               <li key={f.key}>• {f.message}</li>
             ))}
           </ul>
-          <p className="mt-2 text-xs text-amber-700 dark:text-amber-400">
-            Pertimbangkan untuk berkonsultasi dengan dokter spesialis kandungan (Sp.OG). Catatan ini bersifat edukatif, bukan diagnosis medis.
+          <p className="mt-2 text-xs text-[#181818]/70">
+            Nggak perlu panik, ya. Tapi ada baiknya kamu konsultasi ke dokter kandungan (Sp.OG) biar lebih tenang. Catatan ini bersifat edukatif, bukan diagnosis medis.
           </p>
         </div>
       </div>

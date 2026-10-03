@@ -1,6 +1,4 @@
-// AES-256-GCM with a PBKDF2-derived key, entirely via the browser's native Web Crypto API:
-// no extra dependency, and it never leaves the device (consistent with the rest of the app).
-const PBKDF2_ITERATIONS = 210_000; // OWASP 2023 minimum recommendation for PBKDF2-HMAC-SHA256
+const PBKDF2_ITERATIONS = 210_000;
 
 export interface EncryptedEnvelope {
   encrypted: true;
@@ -37,8 +35,6 @@ export async function encryptText(plainText: string, password: string): Promise<
   return { salt: toBase64(salt), iv: toBase64(iv), ciphertext: toBase64(new Uint8Array(cipherBuffer)), iterations: PBKDF2_ITERATIONS };
 }
 
-// AES-GCM's auth tag rejects any wrong key on its own, so a bad password surfaces here as a
-// thrown DOMException rather than silently producing garbage plaintext.
 export async function decryptText(envelope: Pick<EncryptedEnvelope, 'salt' | 'iv' | 'ciphertext' | 'iterations'>, password: string): Promise<string> {
   const salt = fromBase64(envelope.salt);
   const iv = fromBase64(envelope.iv);

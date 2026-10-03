@@ -3,25 +3,12 @@ import { BLEEDING_INTENSITIES, rebuildCyclesFromLogs } from './cycleMath';
 
 let chain: Promise<void> = Promise.resolve();
 
-/**
- * Recomputes the `cycles` table from raw `dailyLogs` flow entries. Cycles are a derived
- * cache (not hand-edited), so the simplest correct strategy is to rebuild them wholesale
- * on every daily-log write rather than trying to diff/patch individual rows.
- *
- * Callers may fire this off without awaiting it (it's a background cache rebuild, not
- * something the user needs to wait on). Runs are chained rather than run in parallel so two
- * overlapping rebuilds can't race and clear/bulkAdd against each other out of order.
- */
 export function syncCyclesTable(): Promise<void> {
   chain = chain.then(rebuildCyclesTable, rebuildCyclesTable);
   return chain;
 }
 
 async function rebuildCyclesTable(): Promise<void> {
-  // Cycle rebuilds only ever look at bleeding-flagged days (see groupBleedingSegments), which
-  // are a fraction of total entries once someone's been logging daily mood/symptoms for a
-  // while, so querying the flowIntensity index instead of toArray() skips shipping every
-  // non-bleeding row's symptoms/moods/notes across the IndexedDB boundary for nothing.
   const bleedingLogs = await db.dailyLogs.where('flowIntensity').anyOf([...BLEEDING_INTENSITIES]).toArray();
   const { cycles } = rebuildCyclesFromLogs(bleedingLogs);
 

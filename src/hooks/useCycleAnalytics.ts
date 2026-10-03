@@ -7,8 +7,6 @@ export function useCycleAnalytics() {
   const cycles = useLiveQuery(() => db.cycles.toArray(), [], []);
   const dailyLogs = useLiveQuery(() => db.dailyLogs.toArray(), [], []);
 
-  // Computed once per dailyLogs change and reused for the spotting-date red flag,
-  // instead of computeCycleStats re-deriving cycles from scratch a second time.
   const { intermenstrualSpottingDates } = useMemo(() => rebuildCyclesFromLogs(dailyLogs ?? []), [dailyLogs]);
 
   const stats = useMemo(

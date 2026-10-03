@@ -8,7 +8,6 @@ export function useTheme() {
   useEffect(() => {
     applyTheme(preference);
     if (preference !== 'system') return;
-    // Keep the effective theme in sync if the OS setting changes while "system" is selected.
     const mq = window.matchMedia('(prefers-color-scheme: dark)');
     const onChange = () => applyTheme('system');
     mq.addEventListener('change', onChange);

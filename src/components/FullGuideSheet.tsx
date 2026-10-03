@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { AlertTriangle, BookOpen, ChevronDown, ClipboardList, GraduationCap, Sparkles } from 'lucide-react';
+import { AlertTriangle, BookOpen, ChevronDown, ExternalLink } from 'lucide-react';
 import { Sheet } from './ui/Sheet';
-import { PHASES } from '../data/phases';
+import { CareIcon } from './CareIcon';
+import { PHASE_ICON, PHASE_TINT, PHASES } from '../data/phases';
 import type { PhaseKey } from '../data/phases';
 
 interface FullGuideSheetProps {
@@ -11,60 +12,78 @@ interface FullGuideSheetProps {
 
 const PHASE_ORDER: PhaseKey[] = ['menstrual', 'follicular', 'ovulatory', 'luteal'];
 
-// Proportional widths for a typical 28-day cycle: menstrual 5d, follicular 8d, ovulatory 1d, luteal 14d.
-const CYCLE_DIAGRAM_SEGMENTS: { key: PhaseKey; widthPct: number; barColor: string }[] = [
-  { key: 'menstrual', widthPct: (5 / 28) * 100, barColor: 'bg-rose-500' },
-  { key: 'follicular', widthPct: (8 / 28) * 100, barColor: 'bg-emerald-400' },
-  { key: 'ovulatory', widthPct: (1 / 28) * 100, barColor: 'bg-purple-400' },
-  { key: 'luteal', widthPct: (14 / 28) * 100, barColor: 'bg-amber-400' },
-];
+const PHASE_DAYS: Record<PhaseKey, number> = { menstrual: 5, follicular: 8, ovulatory: 1, luteal: 14 };
 
-const CLINICAL_PARAMETERS = [
-  { parameter: 'Panjang Siklus', normal: '21–35 hari (rata-rata 28 hari)', warning: '<21 hari atau >35 hari' },
-  { parameter: 'Durasi Menstruasi', normal: '2–7 hari (rata-rata 4–5 hari)', warning: '>8 hari' },
-  { parameter: 'Variasi Antar Siklus', normal: '≤4–5 hari', warning: '>7–9 hari berturut-turut' },
-  { parameter: 'Ovulasi & Masa Subur', normal: '~14 hari sebelum menstruasi berikutnya', warning: '-' },
+const CLINICAL_PARAMETERS: { parameter: string; normal: string; warning?: string }[] = [
+  { parameter: 'Panjang siklus', normal: '21–35 hari (rata-rata 28 hari)', warning: '<21 hari atau >35 hari' },
+  { parameter: 'Durasi menstruasi', normal: '2–7 hari (rata-rata 4–5 hari)', warning: '>8 hari' },
+  { parameter: 'Variasi antar siklus', normal: '≤4–5 hari', warning: '>7–9 hari berturut-turut' },
+  { parameter: 'Ovulasi & masa subur', normal: '~14 hari sebelum menstruasi berikutnya' },
 ];
 
 const RED_FLAGS = [
-  { title: 'Nyeri Hebat (Dismenore)', description: 'Nyeri panggul yang mengganggu aktivitas harian dan tidak mereda dengan obat pereda nyeri biasa.' },
-  { title: 'Pendarahan Abnormal (Menorrhagia)', description: 'Mengganti pembalut/tampon setiap jam selama beberapa jam berturut-turut.' },
-  { title: 'Siklus Tidak Teratur', description: 'Siklus konsisten lebih pendek dari 21 hari atau lebih panjang dari 35 hari.' },
-  { title: 'Amenore Sekunder', description: 'Tidak menstruasi selama 90+ hari berturut-turut (dan bukan karena kehamilan).' },
-  { title: 'Pendarahan Intermenstrual', description: 'Flek atau pendarahan yang muncul di antara periode menstruasi yang jelas.' },
+  { title: 'Nyeri hebat (dismenore)', description: 'Nyeri panggul yang mengganggu aktivitas harian dan tidak mereda dengan obat pereda nyeri biasa.' },
+  { title: 'Pendarahan abnormal (menorrhagia)', description: 'Mengganti pembalut/tampon setiap jam selama beberapa jam berturut-turut.' },
+  { title: 'Siklus tidak teratur', description: 'Siklus konsisten lebih pendek dari 21 hari atau lebih panjang dari 35 hari.' },
+  { title: 'Amenore sekunder', description: 'Tidak menstruasi selama 90+ hari berturut-turut (dan bukan karena kehamilan).' },
+  { title: 'Pendarahan intermenstrual', description: 'Flek atau pendarahan yang muncul di antara periode menstruasi yang jelas.' },
 ];
+
+const REFERENCES = [
+  {
+    org: 'ACOG',
+    title: 'Committee Opinion No. 651: Menstruation in Girls and Adolescents: Using the Menstrual Cycle as a Vital Sign',
+    meta: 'Obstetrics & Gynecology 2015;126(6):e143–6 · Reaffirmed 2025',
+    href: 'https://www.acog.org/clinical/clinical-guidance/committee-opinion/articles/2015/12/menstruation-in-girls-and-adolescents-using-the-menstrual-cycle-as-a-vital-sign',
+  },
+  {
+    org: 'FIGO',
+    title: 'The two FIGO systems for normal and abnormal uterine bleeding symptoms and classification of causes of abnormal uterine bleeding in the reproductive years: 2018 revisions',
+    meta: 'Int J Gynaecol Obstet 2018;143(3):393–408',
+    href: 'https://doi.org/10.1002/ijgo.12666',
+  },
+  {
+    org: 'WHO',
+    title: 'WHO statement on menstrual health and rights',
+    meta: '22 Juni 2022',
+    href: 'https://www.who.int/news/item/22-06-2022-who-statement-on-menstrual-health-and-rights',
+  },
+];
+
+const H3 = 'mb-3 text-sm font-bold';
 
 export function FullGuideSheet({ open, onClose }: FullGuideSheetProps) {
   const [expandedPhase, setExpandedPhase] = useState<PhaseKey | null>('menstrual');
 
   return (
     <Sheet open={open} onClose={onClose} title="Panduan Lengkap Menstruasi">
-      <div className="space-y-6 pb-4">
+      <div className="space-y-7 pb-4">
         <section className="flex gap-3">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-rose-100 text-rose-600 dark:bg-rose-900/40 dark:text-rose-400">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#FFA7DC] text-[#181818]">
             <BookOpen size={18} />
           </span>
-          <p className="text-sm leading-relaxed text-rose-900/80 dark:text-stone-300">
-            Menurut ACOG (American College of Obstetricians and Gynecologists), siklus menstruasi sebaiknya dipantau sebagai{' '}
-            <span className="font-semibold text-rose-950 dark:text-rose-50">tanda vital</span>, sama pentingnya dengan tekanan darah atau detak
-            jantung. Perubahan pada panjang siklus atau durasi menstruasi bisa menjadi indikator awal kondisi seperti PCOS, gangguan tiroid, atau
-            endometriosis.
+          <p className="text-sm leading-relaxed text-[var(--muted)]">
+            Menurut ACOG (American College of Obstetricians and Gynecologists), siklus menstruasi layak dipantau sebagai{' '}
+            <span className="font-semibold text-[var(--ink)]">tanda vital</span>, sama pentingnya dengan tekanan darah atau detak
+            jantung. Dengan mengenal ritmemu sendiri, perubahan pada panjang siklus atau durasi haid lebih cepat kamu sadari, termasuk yang bisa
+            menjadi petunjuk awal kondisi seperti PCOS, gangguan tiroid, atau endometriosis.
           </p>
         </section>
 
         <section>
-          <h3 className="mb-3 text-sm font-semibold text-rose-950 dark:text-rose-50">Perjalanan Satu Siklus (28 Hari)</h3>
-          <div className="flex h-8 overflow-hidden rounded-full shadow-inner">
-            {CYCLE_DIAGRAM_SEGMENTS.map((seg) => (
-              <div key={seg.key} style={{ width: `${seg.widthPct}%` }} className={seg.barColor} title={PHASES[seg.key].label} />
+          <h3 className={H3}>Perjalanan satu siklus (28 hari)</h3>
+          <div className="flex h-8 gap-0.5 overflow-hidden rounded-full">
+            {PHASE_ORDER.map((key) => (
+              <div key={key} style={{ flexGrow: PHASE_DAYS[key], background: PHASE_TINT[key] }} title={PHASES[key].label} />
             ))}
           </div>
           <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 text-xs">
             {PHASE_ORDER.map((key) => (
-              <div key={key} className="flex items-center gap-1.5">
-                <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${CYCLE_DIAGRAM_SEGMENTS.find((s) => s.key === key)!.barColor}`} />
-                <span className="text-rose-900/70 dark:text-stone-300">
-                  <span className="font-medium text-rose-950 dark:text-rose-50">{PHASES[key].label}</span> · {PHASES[key].dayRange}
+              <div key={key} className="flex items-start gap-2">
+                <span className="mt-0.5 h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: PHASE_TINT[key] }} />
+                <span>
+                  <span className="block font-bold">{PHASES[key].label}</span>
+                  <span className="block text-[var(--muted)]">{PHASES[key].dayRange}</span>
                 </span>
               </div>
             ))}
@@ -72,50 +91,44 @@ export function FullGuideSheet({ open, onClose }: FullGuideSheetProps) {
         </section>
 
         <section>
-          <h3 className="mb-2 flex items-center gap-2 text-sm font-semibold text-rose-950 dark:text-rose-50">
-            <Sparkles size={16} /> 4 Fase Hormonal
-          </h3>
-          <div className="space-y-2">
+          <h3 className={H3}>4 fase hormonal</h3>
+          <div className="divide-y divide-[var(--line)] border-y border-[var(--line)]">
             {PHASE_ORDER.map((key) => {
               const info = PHASES[key];
               const isExpanded = expandedPhase === key;
               return (
-                <div
-                  key={key}
-                  className="overflow-hidden rounded-2xl border border-rose-100 bg-white shadow-sm dark:border-stone-800 dark:bg-stone-900"
-                >
+                <div key={key}>
                   <button
                     onClick={() => setExpandedPhase(isExpanded ? null : key)}
-                    className="flex w-full items-center justify-between gap-3 p-3 text-left active:scale-[0.99] transition"
+                    aria-expanded={isExpanded}
+                    className="flex w-full items-center gap-3 py-3 text-left transition active:opacity-70"
                   >
-                    <div className="flex items-center gap-3">
-                      <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${info.color}/20 ${info.textColor}`}>
-                        <Sparkles size={16} />
-                      </span>
-                      <div>
-                        <p className="text-sm font-semibold text-rose-950 dark:text-rose-50">{info.label}</p>
-                        <p className="text-xs text-rose-900/60 dark:text-stone-400">{info.dayRange}</p>
-                      </div>
-                    </div>
-                    <ChevronDown size={16} className={`shrink-0 text-rose-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[#181818]" style={{ background: PHASE_TINT[key] }}>
+                      <CareIcon name={PHASE_ICON[key]} size={20} />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-sm font-bold">{info.label}</span>
+                      <span className="block text-xs text-[var(--muted)]">{info.dayRange}</span>
+                    </span>
+                    <ChevronDown size={18} className={`shrink-0 text-[var(--muted)] transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                   </button>
 
                   {isExpanded && (
-                    <div className="space-y-2.5 border-t border-rose-50 px-3 pb-3 pt-2.5 text-sm dark:border-stone-800">
+                    <div className="space-y-3 pb-4 pl-[3.25rem] pt-1 text-sm leading-relaxed">
                       <div>
-                        <p className="mb-0.5 font-semibold text-rose-950 dark:text-rose-50">Profil Hormon</p>
-                        <p className="text-rose-900/80 dark:text-stone-300">{info.hormonal}</p>
+                        <p className="mb-0.5 font-bold">Yang terjadi di tubuhmu</p>
+                        <p className="text-[var(--muted)]">{info.hormonal}</p>
                       </div>
                       <div>
-                        <p className="mb-0.5 font-semibold text-rose-950 dark:text-rose-50">Yang Mungkin Dirasakan</p>
-                        <p className="text-rose-900/80 dark:text-stone-300">{info.bodyExperience}</p>
+                        <p className="mb-0.5 font-bold">Yang mungkin kamu rasakan</p>
+                        <p className="text-[var(--muted)]">{info.bodyExperience}</p>
                       </div>
                       <div>
-                        <p className="mb-0.5 font-semibold text-rose-950 dark:text-rose-50">Tips Perawatan Diri</p>
-                        <ul className="space-y-1">
+                        <p className="mb-0.5 font-bold">Cara merawat diri</p>
+                        <ul className="space-y-1.5">
                           {info.selfCare.map((tip) => (
-                            <li key={tip.title} className="text-rose-900/80 dark:text-stone-300">
-                              <span className="font-medium text-rose-950 dark:text-rose-50">{tip.title}:</span> {tip.tip}
+                            <li key={tip.title} className="text-[var(--muted)]">
+                              <span className="font-bold text-[var(--ink)]">{tip.title}:</span> {tip.tip}
                             </li>
                           ))}
                         </ul>
@@ -129,60 +142,53 @@ export function FullGuideSheet({ open, onClose }: FullGuideSheetProps) {
         </section>
 
         <section>
-          <h3 className="mb-2 flex items-center gap-2 text-sm font-semibold text-rose-950 dark:text-rose-50">
-            <ClipboardList size={16} /> Parameter Klinis Normal
-          </h3>
-          <div className="overflow-hidden rounded-2xl border border-rose-100 dark:border-stone-800">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-rose-50 text-rose-900/70 dark:bg-stone-800 dark:text-stone-300">
-                <tr>
-                  <th className="px-3 py-2 font-semibold">Parameter</th>
-                  <th className="px-3 py-2 font-semibold">Normal</th>
-                  <th className="px-3 py-2 font-semibold">Perlu Diperhatikan</th>
-                </tr>
-              </thead>
-              <tbody>
-                {CLINICAL_PARAMETERS.map((p) => (
-                  <tr key={p.parameter} className="border-t border-rose-50 dark:border-stone-800">
-                    <td className="px-3 py-2 font-medium text-rose-950 dark:text-rose-50">{p.parameter}</td>
-                    <td className="px-3 py-2 text-rose-900/80 dark:text-stone-300">{p.normal}</td>
-                    <td className="px-3 py-2 text-amber-700 dark:text-amber-400">{p.warning}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <h3 className={H3}>Angka normalnya</h3>
+          <div className="divide-y divide-[var(--line)] border-y border-[var(--line)]">
+            {CLINICAL_PARAMETERS.map((p) => (
+              <div key={p.parameter} className="py-3">
+                <p className="text-xs text-[var(--muted)]">{p.parameter}</p>
+                <p className="mt-0.5 text-sm font-bold">{p.normal}</p>
+                {p.warning && (
+                  <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-[#FFE3A3] px-2.5 py-1 text-xs font-semibold text-[#181818]">
+                    <AlertTriangle size={12} className="shrink-0" /> Perlu diperhatikan: {p.warning}
+                  </p>
+                )}
+              </div>
+            ))}
           </div>
         </section>
 
         <section>
-          <h3 className="mb-2 flex items-center gap-2 text-sm font-semibold text-rose-950 dark:text-rose-50">
-            <AlertTriangle size={16} className="text-amber-600 dark:text-amber-400" /> Kapan Perlu ke Dokter (Sp.OG)
-          </h3>
-          <div className="space-y-2 rounded-2xl border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-950/40">
-            {RED_FLAGS.map((flag) => (
-              <div key={flag.title} className="text-xs">
-                <p className="font-semibold text-amber-900 dark:text-amber-200">{flag.title}</p>
-                <p className="text-amber-800 dark:text-amber-300">{flag.description}</p>
-              </div>
-            ))}
-            <p className="pt-1 text-[11px] text-amber-700 dark:text-amber-400">
+          <h3 className={H3}>Kapan perlu ke dokter (Sp.OG)</h3>
+          <div className="rounded-2xl bg-[#FFE3A3] p-4 text-[#181818]">
+            <ul className="space-y-3 text-sm">
+              {RED_FLAGS.map((flag) => (
+                <li key={flag.title}>
+                  <p className="font-bold">{flag.title}</p>
+                  <p className="text-[#181818]/80">{flag.description}</p>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-4 border-t border-[#181818]/15 pt-3 text-xs text-[#181818]/70">
               Catatan ini bersifat edukatif dan bukan pengganti diagnosis medis profesional.
             </p>
           </div>
         </section>
 
         <section>
-          <h3 className="mb-2 flex items-center gap-2 text-xs font-semibold text-rose-900/60 dark:text-stone-400">
-            <GraduationCap size={14} /> Referensi Ilmiah
-          </h3>
-          <ul className="space-y-1 text-[11px] leading-relaxed text-rose-900/50 dark:text-stone-500">
-            <li>
-              ACOG Committee Opinion No. 651: <em>Menstruation in Girls and Adolescents: Using the Menstrual Cycle as a Vital Sign.</em>{' '}
-              Obstetrics & Gynecology, 2015 (Reaffirmed 2023).
-            </li>
-            <li>World Health Organization (WHO): Menstrual Health and Rights Guidelines & Reproductive Health Standards.</li>
-            <li>FIGO (International Federation of Gynecology and Obstetrics): System 1 Classification of Abnormal Uterine Bleeding (AUB).</li>
-          </ul>
+          <h3 className={H3}>Referensi</h3>
+          <div className="divide-y divide-[var(--line)] border-y border-[var(--line)]">
+            {REFERENCES.map((ref) => (
+              <a key={ref.href} href={ref.href} target="_blank" rel="noopener noreferrer" className="flex items-start gap-3 py-3 transition active:opacity-70">
+                <span className="min-w-0 flex-1">
+                  <span className="block text-xs font-bold">{ref.org}</span>
+                  <span className="block text-xs leading-relaxed text-[var(--muted)]">{ref.title}</span>
+                  <span className="mt-0.5 block text-[11px] text-[var(--muted)]">{ref.meta}</span>
+                </span>
+                <ExternalLink size={16} className="mt-0.5 shrink-0 text-[var(--muted)]" />
+              </a>
+            ))}
+          </div>
         </section>
       </div>
     </Sheet>

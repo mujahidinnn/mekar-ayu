@@ -1,28 +1,46 @@
 # Mekar Ayu
 
-Pelacak siklus menstruasi yang privat dan 100% berjalan di perangkat pengguna. Tanpa akun, tanpa server, tanpa pelacakan — seluruh data tersimpan secara lokal di browser.
+Pelacak siklus menstruasi yang privat dan 100% berjalan di perangkat pengguna. Tanpa akun, tanpa server, tanpa pelacakan. Seluruh data tersimpan secara lokal di browser.
 
 **Live:** https://mekar-ayu.vercel.app/
 
-## Preview
+## Halaman Utama
+
+Navigasi bawah berisi empat tab: Beranda, Kalender, Statistik, dan Lainnya. Tangkapan layar di bawah memakai data demo (lihat [Data Demo](#data-demo)).
 
 <table>
   <tr>
-    <td align="center" width="25%">
-      <img src="docs/screenshots/01-home-calendar.png" width="200" alt="Kalender siklus di halaman utama" /><br />
-      <sub><b>Kalender & Status Siklus</b></sub>
+    <td align="center" valign="top" width="33%">
+      <img src="docs/screenshots/01-beranda.png" width="240" alt="Halaman Beranda" /><br />
+      <b>Beranda</b><br />
+      <sub>Ringkasan hari ini: hitung mundur menuju haid, fase siklus yang sedang berjalan, pilihan mood cepat, perkiraan haid dan masa subur, serta tips self-care sesuai fase dan gejala.</sub>
     </td>
-    <td align="center" width="25%">
-      <img src="docs/screenshots/02-log-editor.png" width="200" alt="Pencatatan flow, gejala, dan mood harian" /><br />
-      <sub><b>Catat Harian</b></sub>
+    <td align="center" valign="top" width="33%">
+      <img src="docs/screenshots/02-catat-harian.png" width="240" alt="Halaman Catat Harian" /><br />
+      <b>Catat Harian</b><br />
+      <sub>Sheet pencatatan untuk satu tanggal: aliran haid, sinyal tubuh (gejala), mood, dan catatan bebas. Tersimpan otomatis ke perangkat.</sub>
     </td>
-    <td align="center" width="25%">
-      <img src="docs/screenshots/04-history.png" width="200" alt="Riwayat dan tren siklus" /><br />
-      <sub><b>Riwayat & Tren</b></sub>
+    <td align="center" valign="top" width="33%">
+      <img src="docs/screenshots/03-kalender.png" width="240" alt="Halaman Kalender" /><br />
+      <b>Kalender</b><br />
+      <sub>Kalender siklus per bulan dengan penanda haid, perkiraan haid, masa subur, dan ovulasi, plus agenda tanggal penting berikutnya. Ketuk tanggal untuk mencatat.</sub>
     </td>
-    <td align="center" width="25%">
-      <img src="docs/screenshots/03-settings.png" width="200" alt="Pengaturan, tema, dan ekspor data" /><br />
-      <sub><b>Pengaturan & Backup</b></sub>
+  </tr>
+  <tr>
+    <td align="center" valign="top" width="33%">
+      <img src="docs/screenshots/04-statistik.png" width="240" alt="Halaman Statistik: Mood" /><br />
+      <b>Statistik: Mood</b><br />
+      <sub>Kalender mood per bulan, ringkasan mood yang paling dominan, dan sebaran tiap mood.</sub>
+    </td>
+    <td align="center" valign="top" width="33%">
+      <img src="docs/screenshots/05-statistik-siklus.png" width="240" alt="Halaman Statistik: Siklus" /><br />
+      <b>Statistik: Siklus</b><br />
+      <sub>Gejala yang paling sering muncul, rata-rata panjang siklus dan lama haid, serta pintu masuk ke riwayat dan tren siklus.</sub>
+    </td>
+    <td align="center" valign="top" width="33%">
+      <img src="docs/screenshots/06-lainnya.png" width="240" alt="Halaman Lainnya" /><br />
+      <b>Lainnya</b><br />
+      <sub>Pengaturan tampilan (terang/gelap), pemasangan PWA, panduan menstruasi, backup dan ekspor (JSON, PDF, Excel, WhatsApp), info penyimpanan lokal, dan kebijakan privasi.</sub>
     </td>
   </tr>
 </table>
@@ -31,12 +49,12 @@ Pelacak siklus menstruasi yang privat dan 100% berjalan di perangkat pengguna. T
 
 - Kalender siklus dengan prediksi fase (menstruasi, subur, ovulasi, dll.)
 - Pencatatan harian: intensitas flow, gejala, mood, dan catatan
-- Ringkasan analitik siklus (rata-rata panjang siklus, status saat ini)
+- Statistik mood, gejala, dan siklus (rata-rata panjang siklus, lama haid, riwayat)
 - Red flag banner untuk pola yang perlu diperhatikan
-- Ekspor data ke PDF/Excel
+- Backup dan ekspor data ke JSON (bisa dikunci password), PDF, dan Excel
 - Mode gelap/terang
-- Progressive Web App (PWA) — dapat diinstal dan dipakai offline
-- Penyimpanan 100% lokal menggunakan IndexedDB (Dexie) — tidak ada backend atau telemetry
+- Progressive Web App (PWA), dapat diinstal dan dipakai offline
+- Penyimpanan 100% lokal menggunakan IndexedDB (Dexie), tidak ada backend atau telemetry
 
 ## Tech Stack
 
@@ -62,6 +80,10 @@ npm run lint      # jalankan ESLint
 npm run preview   # preview hasil build production
 ```
 
+## Data Demo
+
+Saat `npm run dev` berjalan, buka `http://localhost:5173/?seed` untuk mengisi aplikasi dengan sekitar 4 bulan data contoh (lihat `src/lib/seedDemo.ts`). Perintah ini menimpa data yang ada di browser tersebut dan hanya aktif di mode dev.
+
 ## Deploy dengan Docker
 
 Proyek ini menyertakan `Dockerfile` (build multi-stage dengan Nginx) dan `docker-compose.yml`:
@@ -76,7 +98,8 @@ Aplikasi akan tersedia di `http://localhost:8080`.
 
 ```
 src/
-├── components/   # Komponen UI (kalender, sheets, header, dll.)
+├── components/   # Komponen UI (kalender, sheets, navigasi, dll.)
+│   └── screens/  # Halaman per tab: Home, Calendar, Stats, More
 ├── data/         # Data statis (fase siklus)
 ├── db/           # Skema database Dexie/IndexedDB
 ├── hooks/        # Custom React hooks (analytics, sync status, tema, dll.)

@@ -9,8 +9,6 @@ interface SheetProps {
   children: ReactNode;
 }
 
-// Fraction of the sheet's own height that counts as "dragged far enough" to dismiss,
-// plus a fast-flick fallback (dismiss on a quick downward swipe even if the distance is short).
 const DISMISS_HEIGHT_RATIO = 0.25;
 const FLICK_MIN_DISTANCE_PX = 24;
 const FLICK_VELOCITY_PX_PER_MS = 0.5;
@@ -42,8 +40,6 @@ export function Sheet({ open, onClose, title, children }: SheetProps) {
     panel.style.transform = y > 0 ? `translateY(${y}px)` : '';
   };
 
-  // Only the handle/header bar is draggable; the content below keeps its normal scroll,
-  // and taps on the close button inside the header are excluded so they still register as clicks.
   const handlePointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
     if ((e.target as HTMLElement).closest('button')) return;
     const now = performance.now();
@@ -85,35 +81,34 @@ export function Sheet({ open, onClose, title, children }: SheetProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center">
-      <button
-        aria-label="Tutup"
-        className="absolute inset-0 bg-rose-950/40 animate-fade-in dark:bg-black/60"
-        onClick={onClose}
-      />
+    <div className="fixed inset-0 z-50 !m-0 flex items-end justify-center">
+      <button aria-label="Tutup" className="absolute inset-0 bg-[#181818]/40 animate-fade-in" onClick={onClose} />
       <div
         ref={panelRef}
-        className="relative w-full max-w-md max-h-[88vh] overflow-hidden rounded-t-3xl bg-white shadow-2xl animate-slide-up dark:bg-stone-900"
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
+        className="relative max-h-[88vh] w-full max-w-md overflow-hidden rounded-t-[28px] bg-[var(--card)] shadow-2xl animate-slide-up"
       >
         <div className="max-h-[88vh] overflow-y-auto pb-[env(safe-area-inset-bottom)]">
           <div
-            className="sticky top-0 z-10 flex touch-none select-none items-center justify-between border-b border-rose-100 bg-white/95 backdrop-blur px-5 py-4 cursor-grab active:cursor-grabbing dark:border-stone-800 dark:bg-stone-900/95"
+            className="sticky top-0 z-10 flex touch-none select-none items-center justify-between bg-[var(--card)]/95 px-5 pb-3 pt-5 backdrop-blur cursor-grab active:cursor-grabbing"
             onPointerDown={handlePointerDown}
             onPointerMove={handlePointerMove}
             onPointerUp={(e) => finishDrag(e.clientY)}
             onPointerCancel={() => finishDrag(null)}
           >
-            <div className="mx-auto h-1.5 w-10 rounded-full bg-rose-200 absolute left-1/2 top-2 -translate-x-1/2 dark:bg-stone-700" />
-            <h2 className="text-base font-semibold text-rose-950 mt-2 dark:text-rose-50">{title}</h2>
+            <div className="absolute left-1/2 top-2 h-1.5 w-10 -translate-x-1/2 rounded-full bg-[var(--line)]" />
+            <h2 className="mt-2 text-lg font-extrabold">{title}</h2>
             <button
               onClick={onClose}
               aria-label="Tutup"
-              className="mt-2 flex h-11 w-11 items-center justify-center rounded-full text-rose-400 hover:bg-rose-50 active:scale-95 transition dark:text-rose-400 dark:hover:bg-stone-800"
+              className="mt-2 flex h-10 w-10 items-center justify-center rounded-full bg-[var(--surface)] transition active:scale-95"
             >
-              <X size={20} />
+              <X size={18} />
             </button>
           </div>
-          <div className="px-5 py-4">{children}</div>
+          <div className="px-5 pb-5 pt-2">{children}</div>
         </div>
       </div>
     </div>

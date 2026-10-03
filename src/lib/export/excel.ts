@@ -6,15 +6,11 @@ function labelFor(list: readonly { key: string; label: string }[], key: string):
   return list.find((o) => o.key === key)?.label ?? key;
 }
 
-// Built from y/m/d parts (not `new Date(iso)`) so the date lands on the same calendar day
-// regardless of the browser's timezone offset.
 function isoToDate(iso: string): Date {
   const [year, month, day] = iso.split('-').map(Number);
   return new Date(year, month - 1, day);
 }
 
-// json_to_sheet with cellDates only marks a cell as a real Excel date (type 'd'); it still needs
-// an explicit number format, otherwise Excel/LibreOffice fall back to a locale-default one.
 function applyDateFormat(sheet: XLSX.WorkSheet, colIndexes: number[], rowCount: number) {
   for (let row = 1; row <= rowCount; row++) {
     for (const col of colIndexes) {

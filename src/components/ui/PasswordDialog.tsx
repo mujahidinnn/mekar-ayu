@@ -32,13 +32,13 @@ function PasswordField({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full rounded-xl border border-rose-200 bg-white px-3 py-2.5 pr-10 text-sm text-rose-950 outline-none focus:border-rose-400 dark:border-stone-700 dark:bg-stone-800 dark:text-rose-50"
+        className="w-full rounded-xl bg-[var(--surface)] px-3 py-2.5 pr-10 text-sm text-[var(--ink)] outline-none focus:ring-2 focus:ring-[var(--ink)]"
       />
       <button
         type="button"
         onClick={() => setVisible((v) => !v)}
         aria-label={visible ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi'}
-        className="absolute right-0 top-0 flex h-full w-10 items-center justify-center text-rose-900/50 dark:text-stone-400"
+        className="absolute right-0 top-0 flex h-full w-10 items-center justify-center text-[var(--muted)]"
       >
         {visible ? <EyeOff size={16} /> : <Eye size={16} />}
       </button>
@@ -46,8 +46,6 @@ function PasswordField({
   );
 }
 
-// Same centered-modal treatment as ConfirmDialog: entering/handling a password is a
-// deliberate, security-relevant action, not a routine bottom-sheet choice.
 export function PasswordDialog({ open, mode, title, description, error, busy, onSubmit, onCancel, onSkip }: PasswordDialogProps) {
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -70,7 +68,7 @@ export function PasswordDialog({ open, mode, title, description, error, busy, on
       return;
     }
     if (mode === 'set' && password !== confirm) {
-      setLocalError('Konfirmasi kata sandi tidak cocok.');
+      setLocalError('Kedua kata sandinya belum sama. Cek lagi, ya.');
       return;
     }
     setLocalError(null);
@@ -78,16 +76,16 @@ export function PasswordDialog({ open, mode, title, description, error, busy, on
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-6">
-      <button aria-label="Batal" className="absolute inset-0 bg-rose-950/50 animate-fade-in dark:bg-black/60" onClick={onCancel} />
-      <form onSubmit={handleSubmit} className="relative w-full max-w-sm rounded-3xl bg-white p-5 shadow-2xl animate-fade-in dark:bg-stone-900">
+    <div className="fixed inset-0 z-[60] !m-0 flex items-center justify-center p-6">
+      <button aria-label="Batal" className="absolute inset-0 bg-[#181818]/50 animate-fade-in" onClick={onCancel} />
+      <form onSubmit={handleSubmit} className="relative w-full max-w-sm rounded-3xl bg-[var(--card)] p-5 shadow-2xl animate-fade-in">
         <div className="flex items-center gap-2">
-          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-rose-100 text-rose-600 dark:bg-rose-900/40 dark:text-rose-400">
+          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#FFA7DC] text-[#181818]">
             <Lock size={16} />
           </span>
-          <h3 className="text-base font-bold text-rose-950 dark:text-rose-50">{title}</h3>
+          <h3 className="text-base font-bold text-[var(--ink)]">{title}</h3>
         </div>
-        {description && <div className="mt-2 text-sm leading-relaxed text-rose-900/70 dark:text-stone-300">{description}</div>}
+        {description && <div className="mt-2 text-sm leading-relaxed text-[var(--muted)]">{description}</div>}
 
         <div className="mt-4 space-y-2">
           <PasswordField value={password} onChange={setPassword} placeholder="Kata sandi" />
@@ -96,14 +94,11 @@ export function PasswordDialog({ open, mode, title, description, error, busy, on
         </div>
 
         {mode === 'set' && onSkip ? (
-          // Both export paths are legitimate (a password is recommended, not required), so
-          // "without a password" and "Batal" get equal-weight buttons here, not a demoted text
-          // link. Only the locked/recommended path stands out, as the standalone primary button.
           <div className="mt-5 space-y-2">
             <button
               type="submit"
               disabled={busy}
-              className="min-h-11 w-full rounded-2xl bg-rose-500 text-sm font-semibold text-white transition active:scale-95 hover:bg-rose-600 disabled:opacity-60"
+              className="min-h-11 w-full rounded-2xl bg-[var(--ink)] text-sm font-semibold text-white dark:text-[#181818] transition active:scale-95 disabled:opacity-60"
             >
               {busy ? 'Memproses…' : 'Kunci & Unduh'}
             </button>
@@ -111,14 +106,14 @@ export function PasswordDialog({ open, mode, title, description, error, busy, on
               <button
                 type="button"
                 onClick={onCancel}
-                className="min-h-11 flex-1 rounded-2xl border border-rose-200 text-sm font-semibold text-rose-900 active:scale-95 transition hover:bg-rose-50 dark:border-stone-700 dark:text-rose-100 dark:hover:bg-stone-800"
+                className="min-h-11 flex-1 rounded-2xl bg-[var(--surface)] text-sm font-semibold text-[var(--ink)] active:scale-95 transition"
               >
                 Batal
               </button>
               <button
                 type="button"
                 onClick={onSkip}
-                className="min-h-11 flex-1 rounded-2xl border border-rose-200 text-sm font-semibold text-rose-900 active:scale-95 transition hover:bg-rose-50 dark:border-stone-700 dark:text-rose-100 dark:hover:bg-stone-800"
+                className="min-h-11 flex-1 rounded-2xl bg-[var(--surface)] text-sm font-semibold text-[var(--ink)] active:scale-95 transition"
               >
                 Unduh Tanpa Sandi
               </button>
@@ -129,14 +124,14 @@ export function PasswordDialog({ open, mode, title, description, error, busy, on
             <button
               type="button"
               onClick={onCancel}
-              className="min-h-11 flex-1 rounded-2xl border border-rose-200 text-sm font-semibold text-rose-900 active:scale-95 transition hover:bg-rose-50 dark:border-stone-700 dark:text-rose-100 dark:hover:bg-stone-800"
+              className="min-h-11 flex-1 rounded-2xl bg-[var(--surface)] text-sm font-semibold text-[var(--ink)] active:scale-95 transition"
             >
               Batal
             </button>
             <button
               type="submit"
               disabled={busy}
-              className="min-h-11 flex-1 rounded-2xl bg-rose-500 text-sm font-semibold text-white transition active:scale-95 hover:bg-rose-600 disabled:opacity-60"
+              className="min-h-11 flex-1 rounded-2xl bg-[var(--ink)] text-sm font-semibold text-white dark:text-[#181818] transition active:scale-95 disabled:opacity-60"
             >
               {busy ? 'Memproses…' : 'Buka Kunci'}
             </button>

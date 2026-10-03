@@ -11,7 +11,7 @@ export interface DayBadges {
 }
 
 export function getDayBadges(dateStr: string, stats: CycleStats, log: DailyLog | undefined): DayBadges {
-  const isLoggedPeriod = !!log?.flowIntensity && log.flowIntensity !== 'none';
+  const isLoggedPeriod = !!log?.flowIntensity && log.flowIntensity !== 'n';
 
   let isPredictedPeriod = false;
   if (!isLoggedPeriod && stats.predictedNextPeriodStart) {

@@ -2,14 +2,12 @@ import { addDays, differenceInCalendarDays, format, parseISO } from 'date-fns';
 import type { CycleEntry, DailyLog } from '../db/schema';
 import type { PhaseKey } from '../data/phases';
 
-export const BLEEDING_INTENSITIES = new Set(['heavy', 'medium', 'light', 'spotting']);
-// 'light' still counts as a genuine period day (just a lighter flow); only pure 'spotting',
-// with no heavier day anywhere in the streak, is treated as non-period, intermenstrual bleeding.
-const TRUE_PERIOD_INTENSITIES = new Set(['heavy', 'medium', 'light']);
+export const BLEEDING_INTENSITIES = new Set(['h', 'm', 'l', 's']);
+const TRUE_PERIOD_INTENSITIES = new Set(['h', 'm', 'l']);
 
 const DEFAULT_CYCLE_LENGTH = 28;
 const DEFAULT_PERIOD_LENGTH = 5;
-const MAX_GAP_WITHIN_PERIOD = 1; // allow a 1-day gap (e.g. logged light -> skipped -> spotting) inside one bleeding streak
+const MAX_GAP_WITHIN_PERIOD = 1;
 
 export type IrregularityFlagKey =
   | 'short_cycle'
@@ -53,10 +51,9 @@ interface BleedingSegment {
   startDate: string;
   endDate: string;
   dates: string[];
-  hasTrueFlow: boolean; // contains at least one 'medium'/'heavy' day
+  hasTrueFlow: boolean;
 }
 
-/** Groups consecutive (allowing a 1-day gap) bleeding-logged days into segments. */
 function groupBleedingSegments(sortedLogs: DailyLog[]): BleedingSegment[] {
   const bleedingLogs = sortedLogs.filter((l) => l.flowIntensity && BLEEDING_INTENSITIES.has(l.flowIntensity));
   const segments: BleedingSegment[] = [];
@@ -82,13 +79,6 @@ function groupBleedingSegments(sortedLogs: DailyLog[]): BleedingSegment[] {
   return segments;
 }
 
-/**
- * Rebuilds cycle (period) history from raw daily logs. A bleeding streak that never includes
- * a light/medium/heavy day (pure spotting throughout) is classified as intermenstrual
- * spotting rather than a new cycle, regardless of how long it's been since the last period.
- * That's what lets a stray spotting day mid-cycle surface as a red flag instead of silently
- * corrupting cycle-length stats by being counted as a (very short) new cycle.
- */
 export function rebuildCyclesFromLogs(dailyLogs: DailyLog[]): {
   cycles: Omit<CycleEntry, 'id'>[];
   intermenstrualSpottingDates: string[];
@@ -155,13 +145,9 @@ export function computeCycleStats(
 
   const predictedNextPeriodStart = lastPeriodStart ? format(addDays(parseISO(lastPeriodStart), avgCycleLength), 'yyyy-MM-dd') : null;
 
-  // ACOG: ovulation occurs ~14 days before the next menses starts. Computed directly as a
-  // calendar offset from the predicted next period, not from the last period start, to avoid
-  // off-by-one drift between "days before next period" and a 1-indexed day-of-cycle number.
   const ovulationDate = predictedNextPeriodStart ? format(addDays(parseISO(predictedNextPeriodStart), -14), 'yyyy-MM-dd') : null;
   const fertileWindowStart = ovulationDate ? format(addDays(parseISO(ovulationDate), -5), 'yyyy-MM-dd') : null;
   const fertileWindowEnd = ovulationDate;
-  // 1-indexed day-of-cycle on which ovulation falls, for phase-boundary comparisons below.
   const ovulationDayNumber = Math.max(avgCycleLength - 13, 1);
 
   const knownPeriodLength = lastCycle?.periodLength ?? avgPeriodLength;
@@ -180,14 +166,13 @@ export function computeCycleStats(
     statusLabel = `Hari ke-${currentCycleDay} Menstruasi`;
   } else if (predictedNextPeriodStart) {
     const daysUntil = differenceInCalendarDays(parseISO(predictedNextPeriodStart), parseISO(today));
-    if (daysUntil > 0) statusLabel = `H-${daysUntil} Estimasi Menstruasi`;
-    else if (daysUntil === 0) statusLabel = 'Estimasi Menstruasi Hari Ini';
-    else statusLabel = `Terlambat ${Math.abs(daysUntil)} Hari`;
+    if (daysUntil > 0) statusLabel = `${daysUntil} hari menuju haid`;
+    else if (daysUntil === 0) statusLabel = 'Haid diperkirakan hari ini';
+    else statusLabel = `Lewat ${Math.abs(daysUntil)} hari dari perkiraan`;
   } else {
-    statusLabel = 'Mulai catat siklusmu';
+    statusLabel = 'Yuk, kenali siklusmu';
   }
 
-  // --- Irregularity flags (ACOG / clinical thresholds, Section 2.1) ---
   const irregularityFlags: Flag<IrregularityFlagKey>[] = [];
 
   const lastTwoCycleLengths = recentCycleLengths.slice(-2);
@@ -211,11 +196,10 @@ export function computeCycleStats(
     irregularityFlags.push({ key: 'amenorrhea', message: 'Tidak ada menstruasi selama lebih dari 90 hari.' });
   }
 
-  // --- Red flag banner (Section 3.2) ---
   const redFlags: Flag<RedFlagKey>[] = [];
   const recentLogs = dailyLogs.filter((l) => differenceInCalendarDays(parseISO(today), parseISO(l.date)) <= 3 && differenceInCalendarDays(parseISO(today), parseISO(l.date)) >= 0);
 
-  if (recentLogs.some((l) => l.symptoms.includes('severe_pain'))) {
+  if (recentLogs.some((l) => l.symptoms.includes('sp'))) {
     redFlags.push({
       key: 'severe_pain',
       message: 'Nyeri hebat yang mengganggu aktivitas harian dan tidak mereda dengan obat pereda nyeri biasa.',
@@ -225,7 +209,7 @@ export function computeCycleStats(
   const sortedLogsDesc = [...dailyLogs].sort((a, b) => b.date.localeCompare(a.date));
   let consecutiveHeavy = 0;
   for (const log of sortedLogsDesc) {
-    if (log.flowIntensity === 'heavy') consecutiveHeavy++;
+    if (log.flowIntensity === 'h') consecutiveHeavy++;
     else break;
   }
   if (consecutiveHeavy >= 3) {

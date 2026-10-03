@@ -3,10 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link
+    />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1" />
-    <meta id="theme-color-meta" name="theme-color" content="#FB7185" />
-    <meta name="description" content="Mekar Ayu — pelacak siklus menstruasi privat, 100% tersimpan di perangkat Anda. Tanpa akun, tanpa server, tanpa pelacakan." />
+    <meta id="theme-color-meta" name="theme-color" content="#FFD9C4" />
+    <meta name="description" content="Mekar Ayu: pelacak siklus menstruasi privat, 100% tersimpan di perangkatmu. Tanpa akun, tanpa server, tanpa pelacakan." />
     <meta name="robots" content="index, follow" />
     <link rel="canonical" href="https://mekar-ayu.vercel.app/" />
 
@@ -14,15 +16,15 @@
     <meta property="og:site_name" content="Mekar Ayu" />
     <meta property="og:locale" content="id_ID" />
     <meta property="og:url" content="https://mekar-ayu.vercel.app/" />
-    <meta property="og:title" content="Mekar Ayu — Pelacak Siklus Privat" />
-    <meta property="og:description" content="Pelacak siklus menstruasi privat, 100% tersimpan di perangkat Anda. Tanpa akun, tanpa server, tanpa pelacakan." />
+    <meta property="og:title" content="Mekar Ayu: Pelacak Siklus Privat" />
+    <meta property="og:description" content="Pelacak siklus menstruasi privat, 100% tersimpan di perangkatmu. Tanpa akun, tanpa server, tanpa pelacakan." />
     <meta property="og:image" content="https://mekar-ayu.vercel.app/og-image.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
 
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Mekar Ayu — Pelacak Siklus Privat" />
-    <meta name="twitter:description" content="Pelacak siklus menstruasi privat, 100% tersimpan di perangkat Anda. Tanpa akun, tanpa server, tanpa pelacakan." />
+    <meta name="twitter:title" content="Mekar Ayu: Pelacak Siklus Privat" />
+    <meta name="twitter:description" content="Pelacak siklus menstruasi privat, 100% tersimpan di perangkatmu. Tanpa akun, tanpa server, tanpa pelacakan." />
     <meta name="twitter:image" content="https://mekar-ayu.vercel.app/og-image.png" />
 
     <script type="application/ld+json">
@@ -31,7 +33,7 @@
         "@type": "SoftwareApplication",
         "name": "Mekar Ayu",
         "url": "https://mekar-ayu.vercel.app/",
-        "description": "Pelacak siklus menstruasi privat, 100% tersimpan di perangkat Anda. Tanpa akun, tanpa server, tanpa pelacakan.",
+        "description": "Pelacak siklus menstruasi privat, 100% tersimpan di perangkatmu. Tanpa akun, tanpa server, tanpa pelacakan.",
         "applicationCategory": "HealthApplication",
         "operatingSystem": "Any (Progressive Web App)",
         "inLanguage": "id",
@@ -49,7 +51,7 @@
           var isDark = pref === 'dark' || (pref !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
           if (isDark) {
             document.documentElement.classList.add('dark');
-            document.getElementById('theme-color-meta')?.setAttribute('content', '#1c1917');
+            document.getElementById('theme-color-meta')?.setAttribute('content', '#181818');
           }
         } catch (e) {}
       })();
@@ -57,7 +59,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="Mekar Ayu" />
-    <title>Mekar Ayu — Pelacak Siklus Privat</title>
+    <title>Mekar Ayu: Pelacak Siklus Privat</title>
     <style>
       #splash {
         position: fixed;
@@ -68,32 +70,29 @@
         align-items: center;
         justify-content: center;
         gap: 14px;
-        background: #fb7185;
+        overflow: hidden;
+        background:
+          radial-gradient(60% 35% at 100% 0%, rgba(255, 190, 150, 0.85), transparent 70%),
+          radial-gradient(55% 30% at 0% 100%, rgba(255, 214, 190, 0.8), transparent 70%),
+          linear-gradient(172deg, #FDA9A8 0%, #F98FB3 18%, #FBA5D5 34%, #F1C4E6 52%, #EAC0EE 68%, #DCC0F2 82%, #F8EBF2 100%);
         transition: opacity 0.4s ease;
       }
-      #splash svg {
+      #splash .splash-logo {
+        position: relative;
         width: 72px;
         height: 72px;
-        animation: splash-breathe 1.8s ease-in-out infinite;
+      }
+      #splash .splash-flower {
+        position: absolute;
       }
       #splash span {
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        position: relative;
+        font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         font-size: 15px;
         font-weight: 600;
         letter-spacing: 0.02em;
-        color: #ffffff;
+        color: #181818;
         opacity: 0.92;
-      }
-      @keyframes splash-breathe {
-        0%,
-        100% {
-          transform: scale(1);
-          opacity: 1;
-        }
-        50% {
-          transform: scale(1.08);
-          opacity: 0.85;
-        }
       }
       #splash.splash-hide {
         opacity: 0;
@@ -103,13 +102,26 @@
   </head>
   <body>
     <div id="splash" aria-hidden="true">
-      <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+      <svg width="0" height="0" style="position: absolute">
+        <symbol id="splash-flower" viewBox="-44 -44 88 88">
+          <path id="splash-petal" d="M0 0C-11 -12 -12 -30 0 -40C12 -30 11 -12 0 0Z" fill="currentColor" />
+          <use href="#splash-petal" transform="rotate(72)" />
+          <use href="#splash-petal" transform="rotate(144)" />
+          <use href="#splash-petal" transform="rotate(216)" />
+          <use href="#splash-petal" transform="rotate(288)" />
+        </symbol>
+      </svg>
+      <svg class="splash-flower" style="left: -5rem; top: -4rem; width: 22rem; height: 22rem; color: #ED6B89; transform: rotate(18deg)"><use href="#splash-flower" /></svg>
+      <svg class="splash-flower" style="right: -1.5rem; top: 17%; width: 8rem; height: 8rem; color: #FFFFFF; transform: rotate(-12deg)"><use href="#splash-flower" /></svg>
+      <svg class="splash-flower" style="left: -2.5rem; top: 63%; width: 8rem; height: 8rem; color: #FFFFFF; transform: rotate(24deg)"><use href="#splash-flower" /></svg>
+      <svg class="splash-flower" style="right: -4rem; bottom: -6rem; width: 24rem; height: 24rem; color: #945ACF; transform: rotate(-8deg)"><use href="#splash-flower" /></svg>
+      <svg class="splash-logo" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
         <circle cx="32" cy="22" r="9" fill="#FFFFFF" />
         <circle cx="41.51" cy="28.91" r="9" fill="#FFFFFF" />
         <circle cx="37.88" cy="40.09" r="9" fill="#FFFFFF" />
         <circle cx="26.12" cy="40.09" r="9" fill="#FFFFFF" />
         <circle cx="22.49" cy="28.91" r="9" fill="#FFFFFF" />
-        <circle cx="32" cy="32" r="5" fill="#FB7185" />
+        <circle cx="32" cy="32" r="5" fill="#FFA7DC" />
       </svg>
       <span>Mekar Ayu</span>
     </div>

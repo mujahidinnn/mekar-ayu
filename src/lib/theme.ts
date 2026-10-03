@@ -1,8 +1,8 @@
 export type ThemePreference = 'light' | 'dark' | 'system';
 
 const STORAGE_KEY = 'mekarayu-theme';
-const THEME_COLOR_LIGHT = '#FB7185';
-const THEME_COLOR_DARK = '#1c1917';
+const THEME_COLOR_LIGHT = '#FFD9C4';
+const THEME_COLOR_DARK = '#181818';
 
 export function getStoredThemePreference(): ThemePreference {
   const stored = localStorage.getItem(STORAGE_KEY);

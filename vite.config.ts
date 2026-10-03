@@ -6,16 +6,13 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      // 'prompt' leaves the new SW in the `waiting` state instead of activating it the
-      // instant it's downloaded — the UpdateToast in App.tsx asks the user before any
-      // in-flight IndexedDB write could be interrupted by a controller swap.
       registerType: 'prompt',
       includeAssets: ['favicon.svg', 'apple-touch-icon.png', 'pwa-192x192.png', 'pwa-512x512.png'],
       manifest: {
         id: '/',
         name: 'Mekar Ayu - Period & Cycle Tracker',
         short_name: 'Mekar Ayu',
-        description: 'Privacy-first, local-only period and reproductive health tracker. Zero backend, zero telemetry.',
+        description: 'Teman setia yang memahami setiap fase siklusmu. Privat dan 100% tersimpan di perangkatmu: tanpa akun, tanpa server, tanpa pelacakan.',
         categories: ['health', 'lifestyle', 'medical'],
         theme_color: '#FB7185',
         background_color: '#FFF1F2',
@@ -28,10 +25,6 @@ export default defineConfig({
           { src: 'pwa-512x512.png', sizes: '512x512', type: 'image/png' },
           { src: 'pwa-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
-        // Lets Chrome's install prompt show an actual preview of the app instead of a bare
-        // name + icon — the richer, more legitimate-looking dialog is the one lever this repo
-        // has over "app info" during install; OS-level post-install scanners (e.g. MIUI's own
-        // security app) key off the resulting package's signature/reputation, not this manifest.
         screenshots: [
           {
             src: 'screenshot-narrow.png',
@@ -44,15 +37,6 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
-        // The PDF/Excel export libraries (jsPDF, SheetJS, and jsPDF's own html2canvas/dompurify
-        // deps) are dynamically imported only when the user taps an export button — they're
-        // rarely used, so they shouldn't bloat the up-front install cache. They're still fully
-        // available offline once fetched once, via the runtime caching rule below.
-        // og-image.png and screenshot-narrow.png are only ever fetched by social-link crawlers
-        // and Chrome's install-prompt UI, never by the app itself, so neither belongs offline.
-        // index.es-*.js is jsPDF's own core-js/canvg chunk, split out by Rollup under that name
-        // rather than a "pdf-" prefix; it's only reachable via the dynamic import in pdf-*.js,
-        // so it belongs in the same lazy, on-demand bucket as the rest of the export libs.
         globIgnores: [
           '**/pdf-*.js',
           '**/excel-*.js',

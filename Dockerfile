@@ -1,4 +1,3 @@
-# --- Build stage ---
 FROM node:20-alpine AS builder
 WORKDIR /app
 
@@ -8,7 +7,6 @@ RUN npm ci
 COPY . .
 RUN npm run build
 
-# --- Runtime stage ---
 FROM nginx:1.27-alpine AS runner
 
 COPY nginx.conf /etc/nginx/conf.d/default.conf
