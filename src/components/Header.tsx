@@ -20,7 +20,7 @@ export function Header({ title, visibleMonth, onPrevMonth, onNextMonth, onToday,
 
   return (
     <header className="px-5 pt-[max(env(safe-area-inset-top),1.25rem)]">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between lg:justify-center lg:gap-10">
         <button onClick={onPrevMonth} aria-label="Bulan sebelumnya" className={BTN}>
           <ChevronLeft size={20} />
         </button>

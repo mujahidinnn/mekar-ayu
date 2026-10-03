@@ -5,7 +5,7 @@ function labelFor(list: readonly { key: string; label: string }[], key: string):
   return list.find((o) => o.key === key)?.label ?? key;
 }
 
-export function generateWhatsAppSummary(monthName: string, cycles: CycleEntry[], dailyLogs: DailyLog[]): string {
+export function generateWhatsAppSummary(monthName: string, cycles: CycleEntry[], dailyLogs: DailyLog[], phone = ''): string {
   const sortedCycles = [...cycles].sort((a, b) => b.startDate.localeCompare(a.startDate));
   const lastCycle = sortedCycles[0];
   const avgCycleLength = cycles.length
@@ -39,5 +39,6 @@ ${
 ---
 \u{1F512} Data ini dicatat privat di Mekar Ayu (100% Local-First, Tanpa Server).`;
 
-  return `https://wa.me/?text=${encodeURIComponent(text)}`;
+  const number = phone.replace(/\D/g, '').replace(/^0/, '62');
+  return `https://wa.me/${number}?text=${encodeURIComponent(text)}`;
 }

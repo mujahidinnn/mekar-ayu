@@ -95,7 +95,7 @@ const GLYPHS: Record<string, React.ReactNode> = {
 
 export function CareIcon({ name, size = 18 }: { name: string; size?: number }) {
   return (
-    <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg viewBox="0 0 24 24" width={`${size / 16}rem`} height={`${size / 16}rem`} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       {GLYPHS[name] ?? <circle cx="12" cy="12" r="7" />}
     </svg>
   );

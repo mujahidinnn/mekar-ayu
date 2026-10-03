@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { differenceInCalendarDays, format, parseISO } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
-import { ArrowRight, PenLine } from 'lucide-react';
+import { ArrowRight, CircleHelp, PenLine } from 'lucide-react';
 import { db } from '../../db/schema';
 import type { DailyLog } from '../../db/schema';
 import { withSync } from '../../lib/syncStatus';
@@ -52,7 +52,7 @@ export function HomeScreen({ stats, todayLog, onOpenLogEditor, onSeeAll }: HomeS
     : null;
 
   return (
-    <main className="flex-1 space-y-6 px-5 pb-32 pt-[max(env(safe-area-inset-top),1.25rem)]">
+    <main className="flex-1 space-y-6 px-5 pb-32 pt-[max(env(safe-area-inset-top),1.25rem)] lg:pb-10">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Logo size={48} />
@@ -67,9 +67,10 @@ export function HomeScreen({ stats, todayLog, onOpenLogEditor, onSeeAll }: HomeS
 
       <RedFlagBanner flags={stats.redFlags} />
 
+      <div className="space-y-6 lg:grid lg:grid-cols-2 lg:items-start lg:gap-6 lg:space-y-0">
       <section>
         <h2 className="text-xl font-bold">Gimana mood kamu hari ini?</h2>
-        <div className="no-scrollbar -mx-5 flex gap-3 overflow-x-auto px-5 pb-1 pt-4">
+        <div className="no-scrollbar -mx-5 flex gap-3 overflow-x-auto px-5 pb-1 pt-4 md:mx-0 md:flex-wrap md:gap-y-6 md:overflow-visible md:px-0">
           {MOOD_OPTIONS.map((opt) => {
             const active = !!todayLog?.moods.includes(opt.key);
             return (
@@ -77,7 +78,7 @@ export function HomeScreen({ stats, todayLog, onOpenLogEditor, onSeeAll }: HomeS
                 key={opt.key}
                 onClick={() => toggleTodayMood(todayLog, todayStr, opt.key)}
                 aria-pressed={active}
-                className={`relative shrink-0 rounded-full py-2.5 pl-5 pr-9 text-[15px] font-bold transition active:scale-95 ${
+                className={`relative shrink-0 rounded-full py-2.5 pl-5 pr-9 text-[0.9375rem] font-bold transition active:scale-95 ${
                   active ? 'bg-[var(--ink)] text-white dark:text-[#181818]' : 'bg-white text-[#181818] dark:bg-[var(--card)] dark:text-[var(--ink)]'
                 }`}
               >
@@ -124,13 +125,14 @@ export function HomeScreen({ stats, todayLog, onOpenLogEditor, onSeeAll }: HomeS
           </button>
         )}
       </section>
+      </div>
 
       <section>
         <h2 className="mb-3 text-xl font-bold">Self-care</h2>
         {tips.length > 0 ? (
-          <div className="no-scrollbar -mx-5 flex gap-3 overflow-x-auto px-5 pb-1">
+          <div className="no-scrollbar -mx-5 flex gap-3 overflow-x-auto px-5 pb-1 md:mx-0 md:grid md:grid-cols-2 md:overflow-visible md:px-0 lg:grid-cols-3">
             {tips.map((tip, i) => (
-              <div key={tip.tip} className="card w-[76%] shrink-0 p-4">
+              <div key={tip.tip} className="card w-[76%] shrink-0 p-4 md:w-auto">
                 <span
                   className="flex h-14 w-14 items-center justify-center rounded-full text-[#181818]"
                   style={{ background: TIP_TINT[i % TIP_TINT.length] }}
@@ -211,7 +213,7 @@ function TodayCard({
         <span
           className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/60 text-[#181818]"
         >
-          <CareIcon name={stats.currentPhase ? PHASE_ICON[stats.currentPhase] : 'Haid'} size={22} />
+          {stats.currentPhase ? <CareIcon name={PHASE_ICON[stats.currentPhase]} size={22} /> : <CircleHelp size={20} />}
         </span>
         <div className="min-w-0 flex-1">
           <p className="truncate text-base font-bold">{phase ? phase.label : 'Belum ada catatan'}</p>

@@ -81,14 +81,14 @@ export function Sheet({ open, onClose, title, children }: SheetProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 !m-0 flex items-end justify-center">
+    <div className="fixed inset-0 z-50 !m-0 flex items-end justify-center md:items-center md:p-6">
       <button aria-label="Tutup" className="absolute inset-0 bg-[#181818]/40 animate-fade-in" onClick={onClose} />
       <div
         ref={panelRef}
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className="relative max-h-[88vh] w-full max-w-md overflow-hidden rounded-t-[28px] bg-[var(--card)] shadow-2xl animate-slide-up"
+        className="relative max-h-[88vh] w-full max-w-md overflow-hidden rounded-t-[28px] bg-[var(--card)] md:max-w-xl md:rounded-[28px] lg:max-w-2xl shadow-2xl animate-slide-up"
       >
         <div className="max-h-[88vh] overflow-y-auto pb-[env(safe-area-inset-bottom)]">
           <div
@@ -98,7 +98,7 @@ export function Sheet({ open, onClose, title, children }: SheetProps) {
             onPointerUp={(e) => finishDrag(e.clientY)}
             onPointerCancel={() => finishDrag(null)}
           >
-            <div className="absolute left-1/2 top-2 h-1.5 w-10 -translate-x-1/2 rounded-full bg-[var(--line)]" />
+            <div className="absolute left-1/2 top-2 h-1.5 w-10 -translate-x-1/2 rounded-full bg-[var(--line)] md:hidden" />
             <h2 className="mt-2 text-lg font-extrabold">{title}</h2>
             <button
               onClick={onClose}

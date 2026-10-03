@@ -105,8 +105,8 @@ export function SymptomIcon({ symptom, size = 18, className = '' }: { symptom: s
   return (
     <svg
       viewBox="0 0 24 24"
-      width={size}
-      height={size}
+      width={`${size / 16}rem`}
+      height={`${size / 16}rem`}
       className={className}
       fill="none"
       stroke="currentColor"

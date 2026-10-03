@@ -183,7 +183,7 @@ export function FullGuideSheet({ open, onClose }: FullGuideSheetProps) {
                 <span className="min-w-0 flex-1">
                   <span className="block text-xs font-bold">{ref.org}</span>
                   <span className="block text-xs leading-relaxed text-[var(--muted)]">{ref.title}</span>
-                  <span className="mt-0.5 block text-[11px] text-[var(--muted)]">{ref.meta}</span>
+                  <span className="mt-0.5 block text-[0.6875rem] text-[var(--muted)]">{ref.meta}</span>
                 </span>
                 <ExternalLink size={16} className="mt-0.5 shrink-0 text-[var(--muted)]" />
               </a>

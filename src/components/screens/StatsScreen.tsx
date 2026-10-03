@@ -64,7 +64,7 @@ export function StatsScreen({ stats, cycles, dailyLogs, visibleMonth, onPrevMont
   return (
     <>
       <Header title="Kalender Mood" visibleMonth={visibleMonth} onPrevMonth={onPrevMonth} onNextMonth={onNextMonth} onToday={onToday} />
-      <main className="flex-1 space-y-4 pb-32 pt-2">
+      <main className="flex-1 pb-32 pt-2 lg:grid lg:grid-cols-2 lg:items-start lg:pb-10">
         <CalendarGrid
           mode="mood"
           visibleMonth={visibleMonth}
@@ -75,6 +75,7 @@ export function StatsScreen({ stats, cycles, dailyLogs, visibleMonth, onPrevMont
           onSwipeNext={onNextMonth}
         />
 
+        <div className="space-y-4 pt-4">
         <MoodSummaryCard
           className="mx-5"
           caption="Ringkasan mood bulan ini"
@@ -91,7 +92,7 @@ export function StatsScreen({ stats, cycles, dailyLogs, visibleMonth, onPrevMont
                 <MoodFace mood={opt.key} size={30} />
                 <div className="min-w-0">
                   <p className="text-sm font-bold leading-none">{moodCount.get(opt.key) ?? 0}</p>
-                  <p className="truncate text-[11px] text-[var(--muted)]">{opt.label}</p>
+                  <p className="truncate text-[0.6875rem] text-[var(--muted)]">{opt.label}</p>
                 </div>
               </div>
             ))}
@@ -133,6 +134,7 @@ export function StatsScreen({ stats, cycles, dailyLogs, visibleMonth, onPrevMont
           </span>
           <ChevronRight size={18} className="shrink-0 text-[var(--muted)]" />
         </button>
+        </div>
       </main>
 
       <HistorySheet open={historyOpen} onClose={() => setHistoryOpen(false)} cycles={cycles} dailyLogs={dailyLogs} stats={stats} />

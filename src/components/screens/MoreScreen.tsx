@@ -16,6 +16,7 @@ import {
   Monitor,
   Moon,
   Palette,
+  Send,
   ShieldAlert,
   ShieldCheck,
   ShieldOff,
@@ -53,6 +54,8 @@ interface MoreScreenProps {
   onThemeChange: (pref: ThemePreference) => void;
 }
 
+const WA_NUMBER_KEY = 'mekarayu_wa_number';
+
 type Panel = 'storage' | 'theme' | 'backup' | 'safety' | 'fullGuide' | 'backupGuide' | 'privacy' | null;
 
 const THEME_OPTIONS: { key: ThemePreference; label: string; icon: React.ReactNode }[] = [
@@ -79,7 +82,8 @@ export function MoreScreen({
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [confirmInstallOpen, setConfirmInstallOpen] = useState(false);
   const [pendingImport, setPendingImport] = useState<{ text: string; cycleCount: number; logCount: number } | null>(null);
-  const [exportLockOpen, setExportLockOpen] = useState(false);
+  const [exportLockOpen, setExportLockOpen] = useState<'download' | 'share' | null>(null);
+  const [waNumber, setWaNumber] = useState(() => localStorage.getItem(WA_NUMBER_KEY) ?? '');
   const [exportBusy, setExportBusy] = useState(false);
   const [pendingLockedFile, setPendingLockedFile] = useState<string | null>(null);
   const [unlockError, setUnlockError] = useState<string | null>(null);
@@ -98,7 +102,7 @@ export function MoreScreen({
 
   const handleWhatsAppShare = () => {
     const monthName = format(new Date(), 'MMMM yyyy', { locale: localeId });
-    window.open(generateWhatsAppSummary(monthName, cycles, dailyLogs), '_blank');
+    window.open(generateWhatsAppSummary(monthName, cycles, dailyLogs, waNumber), '_blank');
   };
 
   const handlePdfExport = async () => {
@@ -169,8 +173,8 @@ export function MoreScreen({
   const handleExportSubmit = async (password: string) => {
     setExportBusy(true);
     try {
-      await exportBackupJSON(password);
-      setExportLockOpen(false);
+      await exportBackupJSON(password, exportLockOpen === 'share');
+      setExportLockOpen(null);
     } catch {
       flash('error', 'File-nya belum berhasil dikunci. Coba lagi, ya.');
     } finally {
@@ -193,6 +197,8 @@ export function MoreScreen({
 
   const confirmDelete = async () => {
     await withSync(() => deleteAllData());
+    localStorage.removeItem(WA_NUMBER_KEY);
+    setWaNumber('');
     onRefreshStorage();
     setConfirmDeleteOpen(false);
     flash('success', 'Semua data udah dihapus.');
@@ -211,7 +217,7 @@ export function MoreScreen({
   const themeLabel = THEME_OPTIONS.find((o) => o.key === themePreference)?.label;
 
   return (
-    <main className="flex-1 space-y-6 px-5 pb-32 pt-[max(env(safe-area-inset-top),1.25rem)]">
+    <main className="flex-1 space-y-6 px-5 pb-32 pt-[max(env(safe-area-inset-top),1.25rem)] lg:pb-10">
       <div className="text-center">
         <h1 className="text-base font-extrabold">Lainnya</h1>
         <p className="text-xs font-medium text-[var(--muted)]">Pengaturan, backup, dan panduan</p>
@@ -228,6 +234,7 @@ export function MoreScreen({
         </p>
       )}
 
+      <div className="space-y-6 lg:grid lg:grid-cols-2 lg:items-start lg:gap-6 lg:space-y-0">
       <Group title="Aplikasi">
         <Row icon={<Palette size={18} />} tint="#D5C3FF" label="Tampilan" sub={themeLabel} onClick={() => setPanel('theme')} />
         {!isInstalled && (
@@ -254,9 +261,10 @@ export function MoreScreen({
       <Group title="Zona bahaya">
         <Row icon={<Trash2 size={18} />} tint="#FFB4B4" label="Hapus semua data" sub="Permanen, nggak bisa dibalikin" danger onClick={() => setConfirmDeleteOpen(true)} />
       </Group>
+      </div>
 
-      <p className="text-center text-[11px] leading-relaxed text-[var(--muted)]">
-        Datamu cuma punya kamu. Mekar Ayu 100% local-first: tanpa server, tanpa akun, tanpa pelacakan. Semuanya tersimpan di perangkat ini aja.
+      <p className="text-center text-[0.6875rem] leading-relaxed text-[var(--muted)]">
+        Datamu cuma punya kamu. Mekar Ayu 100% local-first - tanpa server, tanpa akun, tanpa pelacakan. Semuanya tersimpan di perangkat ini aja.
       </p>
 
       <Sheet open={panel === 'storage'} onClose={close} title="Penyimpanan lokal">
@@ -292,7 +300,10 @@ export function MoreScreen({
 
       <Sheet open={panel === 'backup'} onClose={close} title="Backup & ekspor">
         <div className="space-y-2">
-          <Action icon={<Download size={18} />} label="Backup JSON" sub="Simpan seluruh data, bisa dikunci kata sandi" onClick={() => setExportLockOpen(true)} />
+          <Action icon={<Download size={18} />} label="Backup JSON" sub="Simpan seluruh data, bisa dikunci kata sandi" onClick={() => setExportLockOpen('download')} />
+          {'canShare' in navigator && (
+            <Action icon={<Send size={18} />} label="Kirim backup ke WhatsApp" sub="Bagikan file backup ke chat pribadimu" onClick={() => setExportLockOpen('share')} />
+          )}
           <Action
             icon={exportingReport === 'pdf' ? <Loader2 size={18} className="animate-spin" /> : <FileText size={18} />}
             label={exportingReport === 'pdf' ? 'Memproses…' : 'Unduh laporan PDF'}
@@ -308,8 +319,24 @@ export function MoreScreen({
             disabled={exportingReport !== null}
           />
           <Action icon={<MessageCircle size={18} />} label="Salin ringkasan ke WhatsApp" sub="Kirim ke catatan pribadimu" onClick={handleWhatsAppShare} />
+          <label className="block rounded-2xl bg-[var(--surface)] px-4 py-3">
+            <span className="block text-xs text-[var(--muted)]">Nomor WhatsApp kamu (opsional), biar ringkasan langsung kebuka di chat kamu sendiri. Cuma disimpan di perangkat ini.</span>
+            <span className="mt-1 block text-xs text-[var(--muted)]">Contoh: <b className="text-[var(--ink)]">081234567890</b> atau <b className="text-[var(--ink)]">6281234567890</b></span>
+            <input
+              type="tel"
+              inputMode="tel"
+              autoComplete="tel"
+              placeholder="081234567890"
+              value={waNumber}
+              onChange={(e) => {
+                setWaNumber(e.target.value);
+                localStorage.setItem(WA_NUMBER_KEY, e.target.value);
+              }}
+              className="mt-2 w-full rounded-xl bg-[var(--card)] px-3 py-2.5 text-sm font-bold outline-none focus:ring-2 focus:ring-[var(--ink)]"
+            />
+          </label>
           <Action icon={<Upload size={18} />} label="Pulihkan JSON" sub="Ganti data saat ini dengan file backup" onClick={() => fileInputRef.current?.click()} />
-          <input ref={fileInputRef} type="file" accept="application/json" className="hidden" onChange={handleFileChange} />
+          <input ref={fileInputRef} type="file" accept=".json,.txt,application/json,text/plain" className="hidden" onChange={handleFileChange} />
         </div>
       </Sheet>
 
@@ -354,16 +381,17 @@ export function MoreScreen({
       />
 
       <PasswordDialog
-        open={exportLockOpen}
+        open={!!exportLockOpen}
         mode="set"
         title="Kunci file backup?"
         description="Tambahkan kata sandi supaya isi file ini tidak bisa dibaca orang lain kalau tersimpan di Drive, email, atau HP yang hilang. Simpan baik-baik, ya, karena tanpa kata sandi ini file tidak bisa dipulihkan."
         busy={exportBusy}
         onSubmit={handleExportSubmit}
-        onCancel={() => setExportLockOpen(false)}
+        onCancel={() => setExportLockOpen(null)}
         onSkip={async () => {
-          setExportLockOpen(false);
-          await exportBackupJSON();
+          const share = exportLockOpen === 'share';
+          setExportLockOpen(null);
+          await exportBackupJSON(undefined, share);
         }}
       />
 
@@ -392,6 +420,7 @@ export function MoreScreen({
         }
         confirmLabel="Ya, Hapus Semua"
         destructive
+        requireText="HAPUS"
         onConfirm={confirmDelete}
         onCancel={() => setConfirmDeleteOpen(false)}
       />

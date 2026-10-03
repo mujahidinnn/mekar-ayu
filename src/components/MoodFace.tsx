@@ -118,7 +118,7 @@ interface MoodFaceProps {
 export function MoodFace({ mood, size = 40, className = '' }: MoodFaceProps) {
   const color = FACE_COLORS[mood] ?? '#E8E3E6';
   return (
-    <svg viewBox="0 0 92 92" width={size} height={size} className={className} role="img" aria-label={mood}>
+    <svg viewBox="0 0 92 92" width={`${size / 16}rem`} height={`${size / 16}rem`} className={className} role="img" aria-label={mood}>
       <rect width="92" height="92" rx="28" fill={color} />
       <FaceDetails mood={mood} />
     </svg>

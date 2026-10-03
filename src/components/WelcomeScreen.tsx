@@ -21,7 +21,7 @@ export function Flower({ className, fill, rotate = 0 }: { className: string; fil
 
 export function WelcomeScreen({ onStart }: WelcomeScreenProps) {
   return (
-    <div className="relative mx-auto flex min-h-screen max-w-md flex-col items-center justify-center overflow-hidden px-6 text-center text-[#181818]">
+    <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-6 text-center text-[#181818]">
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(172deg,#FDA9A8_0%,#F98FB3_18%,#FBA5D5_34%,#F1C4E6_52%,#EAC0EE_68%,#DCC0F2_82%,#F8EBF2_100%)]" />
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_35%_at_100%_0%,rgba(255,190,150,0.85),transparent_70%)]" />
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(55%_30%_at_0%_100%,rgba(255,214,190,0.8),transparent_70%)]" />
@@ -38,11 +38,14 @@ export function WelcomeScreen({ onStart }: WelcomeScreenProps) {
           <Logo size={40} />
           <span className="text-xl font-bold tracking-tight">Mekar Ayu</span>
         </div>
-        <h1 className="text-[2.75rem] font-bold leading-[1.08] tracking-tight">
+        <h1 className="text-[2.75rem] font-bold leading-[1.08] tracking-tight md:text-6xl">
           Nemenin kamu
           <br />
           di tiap fase
         </h1>
+        <p className="mx-auto mt-4 max-w-xs text-base font-medium opacity-80">
+          Kalender haid, masa subur, dan mood tracker yang privat. Semua data cuma ada di HP kamu.
+        </p>
         <button
           onClick={onStart}
           className="mx-auto mt-8 flex items-center gap-4 rounded-full bg-white/60 py-2 pl-7 pr-2 text-base font-bold backdrop-blur-sm transition active:scale-[0.98]"

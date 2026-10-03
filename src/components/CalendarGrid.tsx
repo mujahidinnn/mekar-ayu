@@ -16,7 +16,7 @@ interface CalendarGridProps {
 }
 
 const WEEKDAYS = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
-const CELL = 'relative mx-auto flex h-11 w-11 items-center justify-center rounded-[16px] transition active:scale-95';
+const CELL = 'relative mx-auto flex h-11 w-11 items-center md:h-14 md:w-14 justify-center rounded-[16px] transition active:scale-95';
 
 export function CalendarGrid({ visibleMonth, stats, dailyLogs, onSelectDate, onSwipePrev, onSwipeNext, mode }: CalendarGridProps) {
   const logsByDate = useMemo(() => new Map(dailyLogs.map((l) => [l.date, l])), [dailyLogs]);
@@ -62,7 +62,7 @@ export function CalendarGrid({ visibleMonth, stats, dailyLogs, onSelectDate, onS
           if (mode === 'mood' && moodKey) {
             return (
               <button key={dateStr} onClick={() => onSelectDate(dateStr)} aria-label={label} className={`${CELL} ${inMonth ? '' : 'opacity-50'} ${ring}`}>
-                <MoodFace mood={moodKey} size={44} />
+                <MoodFace mood={moodKey} size={44} className="md:h-14 md:w-14" />
               </button>
             );
           }

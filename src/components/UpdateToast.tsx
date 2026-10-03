@@ -12,7 +12,7 @@ export function UpdateToast({ needRefresh, offlineReady, onApplyUpdate, onDismis
   if (!needRefresh && !offlineReady) return null;
 
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-24 z-30 mx-auto flex max-w-md justify-center px-4">
+    <div className="pointer-events-none fixed inset-x-0 bottom-24 z-30 lg:bottom-6 mx-auto flex max-w-md justify-center px-4">
       {needRefresh ? (
         <div className="pointer-events-auto flex w-full items-center gap-3 rounded-2xl bg-[var(--card)] p-3 shadow-lg">
           <RefreshCw size={20} className="shrink-0 text-[var(--ink)]" />

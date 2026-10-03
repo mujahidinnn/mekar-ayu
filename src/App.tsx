@@ -71,7 +71,8 @@ function App() {
   };
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-md flex-col">
+    <div className="lg:pl-24">
+    <div className="mx-auto flex min-h-screen max-w-md flex-col md:max-w-2xl lg:max-w-5xl">
       {tab === 'home' && <HomeScreen stats={stats} todayLog={todayLog} onOpenLogEditor={openToday} onSeeAll={() => setTab('calendar')} />}
       {tab === 'calendar' && <CalendarScreen {...monthNav} stats={stats} dailyLogs={dailyLogs} />}
       {tab === 'stats' && <StatsScreen {...monthNav} stats={stats} cycles={cycles} dailyLogs={dailyLogs} />}
@@ -100,6 +101,7 @@ function App() {
       />
 
       <BottomSheetLogEditor dateStr={selectedDate} onClose={() => setSelectedDate(null)} />
+    </div>
     </div>
   );
 }

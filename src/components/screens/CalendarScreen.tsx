@@ -46,7 +46,7 @@ export function CalendarScreen({ visibleMonth, onPrevMonth, onNextMonth, onToday
           )}
         </div>
       </Header>
-      <main className="flex-1 pb-32 pt-2">
+      <main className="flex-1 pb-32 pt-2 lg:grid lg:grid-cols-2 lg:items-start lg:pb-10">
         <CalendarGrid
           mode="cycle"
           visibleMonth={visibleMonth}
@@ -57,7 +57,7 @@ export function CalendarScreen({ visibleMonth, onPrevMonth, onNextMonth, onToday
           onSwipeNext={onNextMonth}
         />
 
-        <section className="space-y-4 px-5">
+        <section className="space-y-4 px-5 lg:pt-4">
           <div>
             <h2 className="mb-3 text-xl font-bold">Agenda</h2>
             {stats.predictedNextPeriodStart ? (

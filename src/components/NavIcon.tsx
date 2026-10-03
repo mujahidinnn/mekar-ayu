@@ -72,7 +72,7 @@ const GLYPHS: Record<Tab, { outline: React.ReactNode; solid: React.ReactNode }> 
 
 export function NavIcon({ tab, active, size = 24 }: { tab: Tab; active: boolean; size?: number }) {
   return (
-    <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg viewBox="0 0 24 24" width={`${size / 16}rem`} height={`${size / 16}rem`} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       {active ? GLYPHS[tab].solid : GLYPHS[tab].outline}
     </svg>
   );

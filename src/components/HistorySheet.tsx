@@ -110,7 +110,7 @@ export function HistorySheet({ open, onClose, cycles, dailyLogs, stats }: Histor
                   })}
                 </svg>
               </div>
-              <div className="mt-2 flex items-center justify-center gap-4 text-[11px] text-[var(--muted)]">
+              <div className="mt-2 flex items-center justify-center gap-4 text-[0.6875rem] text-[var(--muted)]">
                 <LegendDot className="bg-[#FFA7DC]" label="Umum (21–35 hari)" />
                 <LegendDot className="bg-amber-500" label="Di luar rentang umum" />
               </div>
@@ -181,7 +181,7 @@ function StatTile({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-2xl bg-[var(--surface)] p-3">
       <p className="text-lg font-bold text-[var(--ink)]">{value}</p>
-      <p className="text-[10px] text-[var(--muted)]">{label}</p>
+      <p className="text-[0.625rem] text-[var(--muted)]">{label}</p>
     </div>
   );
 }

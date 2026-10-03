@@ -1,6 +1,6 @@
 # Mekar Ayu
 
-Pelacak siklus menstruasi yang privat dan 100% berjalan di perangkat pengguna. Tanpa akun, tanpa server, tanpa pelacakan. Seluruh data tersimpan secara lokal di browser.
+Catatan siklus menstruasi yang privat dan 100% berjalan di perangkat pengguna. Tanpa akun, tanpa server, tanpa pelacakan. Seluruh data tersimpan secara lokal di browser.
 
 **Live:** https://mekar-ayu.vercel.app/
 

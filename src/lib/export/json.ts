@@ -7,26 +7,40 @@ async function buildBackupPayload() {
   return { app: 'mekarayu', version: 1, exportedAt: new Date().toISOString(), cycles, dailyLogs };
 }
 
-function downloadJSON(data: unknown): void {
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
+async function saveJSON(data: unknown, share: boolean): Promise<void> {
+  const text = JSON.stringify(data, null, 2);
+  const name = `mekarayu-backup-${new Date().toISOString().split('T')[0]}`;
+
+  if (share) {
+    const file = new File([text], `${name}.txt`, { type: 'text/plain' });
+    if (navigator.canShare?.({ files: [file] })) {
+      try {
+        await navigator.share({ files: [file] });
+        return;
+      } catch (err) {
+        if ((err as Error).name === 'AbortError') return;
+      }
+    }
+  }
+
+  const url = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
   const a = document.createElement('a');
   a.href = url;
-  a.download = `mekarayu-backup-${new Date().toISOString().split('T')[0]}.json`;
+  a.download = `${name}.json`;
   a.click();
   URL.revokeObjectURL(url);
 }
 
-export async function exportBackupJSON(password?: string): Promise<void> {
+export async function exportBackupJSON(password?: string, share = false): Promise<void> {
   const payload = await buildBackupPayload();
 
   if (!password) {
-    downloadJSON(payload);
+    await saveJSON(payload, share);
     return;
   }
 
   const { salt, iv, ciphertext, iterations } = await encryptText(JSON.stringify(payload), password);
-  downloadJSON({ app: 'mekarayu', version: 1, encrypted: true, kdf: 'PBKDF2-SHA256', iterations, salt, iv, ciphertext });
+  await saveJSON({ app: 'mekarayu', version: 1, encrypted: true, kdf: 'PBKDF2-SHA256', iterations, salt, iv, ciphertext }, share);
 }
 
 export function isEncryptedBackup(data: unknown): data is EncryptedEnvelope {
