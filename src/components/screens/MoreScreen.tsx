@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import { format } from 'date-fns';
-import { id as localeId } from 'date-fns/locale';
 import {
   BookOpen,
   ChevronRight,
@@ -9,6 +8,7 @@ import {
   Download,
   FileSpreadsheet,
   FileText,
+  Globe,
   HelpCircle,
   Loader2,
   Lock,
@@ -41,6 +41,9 @@ import { formatStorageSize } from '../../lib/formatStorageSize';
 import { deleteAllData } from '../../lib/deleteAllData';
 import { useInstallPrompt } from '../../hooks/useInstallPrompt';
 import type { ThemePreference } from '../../lib/theme';
+import { useI18n } from '../../lib/i18n';
+import type { AppLocale } from '../../lib/i18n';
+import type { Translations } from '../../lib/i18n/locales/id';
 
 interface MoreScreenProps {
   onRefreshStorage: () => void;
@@ -56,13 +59,22 @@ interface MoreScreenProps {
 
 const WA_NUMBER_KEY = 'mekarayu_wa_number';
 
-type Panel = 'storage' | 'theme' | 'backup' | 'safety' | 'fullGuide' | 'backupGuide' | 'privacy' | null;
+type Panel = 'storage' | 'theme' | 'language' | 'backup' | 'safety' | 'fullGuide' | 'backupGuide' | 'privacy' | null;
 
-const THEME_OPTIONS: { key: ThemePreference; label: string; icon: React.ReactNode }[] = [
-  { key: 'light', label: 'Terang', icon: <Sun size={16} /> },
-  { key: 'dark', label: 'Gelap', icon: <Moon size={16} /> },
-  { key: 'system', label: 'Ikuti sistem', icon: <Monitor size={16} /> },
-];
+function getThemeOptions(t: Translations): { key: ThemePreference; label: string; icon: React.ReactNode }[] {
+  return [
+    { key: 'light', label: t.more.themeOptions.light, icon: <Sun size={16} /> },
+    { key: 'dark', label: t.more.themeOptions.dark, icon: <Moon size={16} /> },
+    { key: 'system', label: t.more.themeOptions.system, icon: <Monitor size={16} /> },
+  ];
+}
+
+function getLanguageOptions(t: Translations): { key: AppLocale; label: string }[] {
+  return [
+    { key: 'id', label: t.more.languageOptions.id },
+    { key: 'en', label: t.more.languageOptions.en },
+  ];
+}
 
 export function MoreScreen({
   onRefreshStorage,
@@ -75,6 +87,7 @@ export function MoreScreen({
   themePreference,
   onThemeChange,
 }: MoreScreenProps) {
+  const { t, locale, setLocale, dateFnsLocale } = useI18n();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [panel, setPanel] = useState<Panel>(null);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -101,8 +114,8 @@ export function MoreScreen({
   };
 
   const handleWhatsAppShare = () => {
-    const monthName = format(new Date(), 'MMMM yyyy', { locale: localeId });
-    window.open(generateWhatsAppSummary(monthName, cycles, dailyLogs, waNumber), '_blank');
+    const monthName = format(new Date(), 'MMMM yyyy', { locale: dateFnsLocale });
+    window.open(generateWhatsAppSummary(t, monthName, cycles, dailyLogs, waNumber), '_blank');
   };
 
   const handlePdfExport = async () => {
@@ -110,10 +123,10 @@ export function MoreScreen({
     setExportingReport('pdf');
     try {
       const { generateMedicalReportPDF } = await import('../../lib/export/pdf');
-      generateMedicalReportPDF(cycles, dailyLogs, stats);
+      generateMedicalReportPDF(t, locale, cycles, dailyLogs, stats);
     } catch (err) {
       console.error('Gagal membuat laporan PDF', err);
-      flash('error', 'Laporan PDF-nya belum berhasil dibuat. Coba lagi, ya.');
+      flash('error', t.more.toasts.pdfError);
     } finally {
       setExportingReport(null);
     }
@@ -124,10 +137,10 @@ export function MoreScreen({
     setExportingReport('excel');
     try {
       const { exportExcelReport } = await import('../../lib/export/excel');
-      exportExcelReport(cycles, dailyLogs);
+      exportExcelReport(t, cycles, dailyLogs);
     } catch (err) {
       console.error('Gagal membuat laporan Excel', err);
-      flash('error', 'Laporan Excel-nya belum berhasil dibuat. Coba lagi, ya.');
+      flash('error', t.more.toasts.excelError);
     } finally {
       setExportingReport(null);
     }
@@ -148,7 +161,7 @@ export function MoreScreen({
       if (!Array.isArray(data.cycles) || !Array.isArray(data.dailyLogs)) throw new Error('invalid');
       setPendingImport({ text, cycleCount: data.cycles.length, logCount: data.dailyLogs.length });
     } catch {
-      flash('error', 'File-nya belum bisa dibaca. Pastikan itu file backup JSON dari Mekar Ayu, ya.');
+      flash('error', t.more.toasts.fileUnreadable);
     }
   };
 
@@ -163,7 +176,7 @@ export function MoreScreen({
       setUnlockError(null);
     } catch (err) {
       setUnlockError(
-        err instanceof Error && err.message === 'WRONG_PASSWORD' ? 'Kata sandinya belum cocok. Coba lagi, ya.' : 'File terkunci ini kayaknya rusak atau nggak valid.',
+        err instanceof Error && err.message === 'WRONG_PASSWORD' ? t.more.toasts.wrongPassword : t.more.toasts.lockedFileInvalid,
       );
     } finally {
       setUnlockBusy(false);
@@ -176,7 +189,7 @@ export function MoreScreen({
       await exportBackupJSON(password, exportLockOpen === 'share');
       setExportLockOpen(null);
     } catch {
-      flash('error', 'File-nya belum berhasil dikunci. Coba lagi, ya.');
+      flash('error', t.more.toasts.exportLockFailed);
     } finally {
       setExportBusy(false);
     }
@@ -187,9 +200,9 @@ export function MoreScreen({
     try {
       await withSync(() => importBackupJSON(pendingImport.text));
       onRefreshStorage();
-      flash('success', 'Datamu udah balik dari file backup.');
+      flash('success', t.more.toasts.importedSuccess);
     } catch {
-      flash('error', 'Data belum berhasil dipulihkan. Pastikan file backup-nya valid, ya.');
+      flash('error', t.more.toasts.importError);
     } finally {
       setPendingImport(null);
     }
@@ -201,7 +214,7 @@ export function MoreScreen({
     setWaNumber('');
     onRefreshStorage();
     setConfirmDeleteOpen(false);
-    flash('success', 'Semua data udah dihapus.');
+    flash('success', t.more.toasts.deletedSuccess);
   };
 
   const handleConfirmInstall = async () => {
@@ -210,17 +223,20 @@ export function MoreScreen({
       setPwaGuideOpen(true);
       return;
     }
-    if ((await promptInstall()) === 'accepted') flash('success', 'Mekar Ayu sedang dipasang ke perangkatmu.');
+    if ((await promptInstall()) === 'accepted') flash('success', t.more.toasts.installSuccess);
   };
 
   const close = () => setPanel(null);
-  const themeLabel = THEME_OPTIONS.find((o) => o.key === themePreference)?.label;
+  const themeOptions = getThemeOptions(t);
+  const languageOptions = getLanguageOptions(t);
+  const themeLabel = themeOptions.find((o) => o.key === themePreference)?.label;
+  const languageLabel = languageOptions.find((o) => o.key === locale)?.label;
 
   return (
     <main className="flex-1 space-y-6 px-5 pb-32 pt-[max(env(safe-area-inset-top),1.25rem)] lg:pb-10">
       <div className="text-center">
-        <h1 className="text-base font-extrabold">Lainnya</h1>
-        <p className="text-xs font-medium text-[var(--muted)]">Pengaturan, backup, dan panduan</p>
+        <h1 className="text-base font-extrabold">{t.more.title}</h1>
+        <p className="text-xs font-medium text-[var(--muted)]">{t.more.subtitle}</p>
       </div>
 
       {message && (
@@ -235,52 +251,51 @@ export function MoreScreen({
       )}
 
       <div className="space-y-6 lg:grid lg:grid-cols-2 lg:items-start lg:gap-6 lg:space-y-0">
-      <Group title="Aplikasi">
-        <Row icon={<Palette size={18} />} tint="#D5C3FF" label="Tampilan" sub={themeLabel} onClick={() => setPanel('theme')} />
+      <Group title={t.more.groupApp}>
+        <Row icon={<Palette size={18} />} tint="#D5C3FF" label={t.more.display} sub={themeLabel} onClick={() => setPanel('theme')} />
+        <Row icon={<Globe size={18} />} tint="#B5D5FF" label={t.more.language} sub={languageLabel} onClick={() => setPanel('language')} />
         {!isInstalled && (
-          <Row icon={<Smartphone size={18} />} tint="#FFB0C4" label="Pasang di layar utama" sub="Buka lebih cepat, bisa offline" onClick={() => setConfirmInstallOpen(true)} />
+          <Row icon={<Smartphone size={18} />} tint="#FFB0C4" label={t.more.installApp} sub={t.more.installAppSub} onClick={() => setConfirmInstallOpen(true)} />
         )}
       </Group>
 
-      <Group title="Panduan">
-        <Row icon={<BookOpen size={18} />} tint="#FFB0C4" label="Panduan lengkap menstruasi" sub="Fase siklus, angka normal, kapan ke dokter" onClick={() => setPanel('fullGuide')} />
-        <Row icon={<HelpCircle size={18} />} tint="#B5D5FF" label="Panduan backup & restore" sub="Cara simpan dan pindahin datamu" onClick={() => setPanel('backupGuide')} />
+      <Group title={t.more.groupGuide}>
+        <Row icon={<BookOpen size={18} />} tint="#FFB0C4" label={t.more.fullGuide} sub={t.more.fullGuideSub} onClick={() => setPanel('fullGuide')} />
+        <Row icon={<HelpCircle size={18} />} tint="#B5D5FF" label={t.more.backupGuideTitle} sub={t.more.backupGuideSub} onClick={() => setPanel('backupGuide')} />
       </Group>
 
-      <Group title="Data">
-        <Row icon={<Download size={18} />} tint="#FFE3A3" label="Backup & ekspor" sub="JSON, PDF, Excel, WhatsApp" onClick={() => setPanel('backup')} />
-        <Row icon={<Database size={18} />} tint="#B5D5FF" label="Penyimpanan lokal" sub={`${recordCount} entri · ${formatStorageSize(usageKB)}`} onClick={() => setPanel('storage')} />
-        <Row icon={<ShieldAlert size={18} />} tint="#FF8A80" label="Keamanan data" sub="Biar datamu tetap aman" onClick={() => setPanel('safety')} />
+      <Group title={t.more.groupData}>
+        <Row icon={<Download size={18} />} tint="#FFE3A3" label={t.more.backupExport} sub={t.more.backupExportSub} onClick={() => setPanel('backup')} />
+        <Row icon={<Database size={18} />} tint="#B5D5FF" label={t.more.localStorage} sub={t.more.localStorageSub(recordCount, formatStorageSize(usageKB))} onClick={() => setPanel('storage')} />
+        <Row icon={<ShieldAlert size={18} />} tint="#FF8A80" label={t.more.dataSafety} sub={t.more.dataSafetySub} onClick={() => setPanel('safety')} />
       </Group>
 
-      <Group title="Tentang">
-        <Row icon={<Lock size={18} />} tint="#D5C3FF" label="Kebijakan privasi" sub="Datamu cuma ada di HP kamu" onClick={() => setPanel('privacy')} />
-        <Row icon={<Coffee size={18} />} tint="#FFE3A3" label="Dukung pengembang" sub="Trakteer" href="https://trakteer.id/mujahidinnn/tip" />
+      <Group title={t.more.groupAbout}>
+        <Row icon={<Lock size={18} />} tint="#D5C3FF" label={t.more.privacyPolicy} sub={t.more.privacyPolicySub} onClick={() => setPanel('privacy')} />
+        <Row icon={<Coffee size={18} />} tint="#FFE3A3" label={t.more.supportDev} sub={t.more.supportDevSub} href="https://trakteer.id/mujahidinnn/tip" />
       </Group>
 
-      <Group title="Zona bahaya">
-        <Row icon={<Trash2 size={18} />} tint="#FFB4B4" label="Hapus semua data" sub="Permanen, nggak bisa dibalikin" danger onClick={() => setConfirmDeleteOpen(true)} />
+      <Group title={t.more.groupDanger}>
+        <Row icon={<Trash2 size={18} />} tint="#FFB4B4" label={t.more.deleteAll} sub={t.more.deleteAllSub} danger onClick={() => setConfirmDeleteOpen(true)} />
       </Group>
       </div>
 
-      <p className="text-center text-[0.6875rem] leading-relaxed text-[var(--muted)]">
-        Datamu cuma punya kamu. Mekar Ayu 100% local-first - tanpa server, tanpa akun, tanpa pelacakan. Semuanya tersimpan di perangkat ini aja.
-      </p>
+      <p className="text-center text-[0.6875rem] leading-relaxed text-[var(--muted)]">{t.more.footerNote}</p>
 
-      <Sheet open={panel === 'storage'} onClose={close} title="Penyimpanan lokal">
+      <Sheet open={panel === 'storage'} onClose={close} title={t.more.storageSheetTitle}>
         <div className="space-y-3 text-sm">
-          <KV k="Total data tersimpan" v={`${recordCount} entri`} />
-          <KV k="Ukuran data siklus & catatan" v={formatStorageSize(usageKB)} />
+          <KV k={t.more.totalStoredLabel} v={t.more.totalStored(recordCount)} />
+          <KV k={t.more.dataSizeLabel} v={formatStorageSize(usageKB)} />
           <div className={`flex items-center gap-2 rounded-2xl p-4 text-xs font-semibold text-[#181818] ${isPersisted ? 'bg-[#C9F2D9]' : 'bg-[#FFE3A3]'}`}>
             {isPersisted ? <ShieldCheck size={18} /> : <ShieldOff size={18} />}
-            {isPersisted ? 'Datamu terlindungi dari penghapusan otomatis' : 'Menunggu izin penyimpanan dari browser'}
+            {isPersisted ? t.more.persistedYes : t.more.persistedNo}
           </div>
         </div>
       </Sheet>
 
-      <Sheet open={panel === 'theme'} onClose={close} title="Tampilan">
+      <Sheet open={panel === 'theme'} onClose={close} title={t.more.display}>
         <div className="space-y-2">
-          {THEME_OPTIONS.map((opt) => {
+          {themeOptions.map((opt) => {
             const active = themePreference === opt.key;
             return (
               <button
@@ -298,35 +313,55 @@ export function MoreScreen({
         </div>
       </Sheet>
 
-      <Sheet open={panel === 'backup'} onClose={close} title="Backup & ekspor">
+      <Sheet open={panel === 'language'} onClose={close} title={t.more.language}>
         <div className="space-y-2">
-          <Action icon={<Download size={18} />} label="Backup JSON" sub="Simpan seluruh data, bisa dikunci kata sandi" onClick={() => setExportLockOpen('download')} />
+          {languageOptions.map((opt) => {
+            const active = locale === opt.key;
+            return (
+              <button
+                key={opt.key}
+                onClick={() => setLocale(opt.key)}
+                aria-pressed={active}
+                className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3.5 text-sm font-semibold transition active:scale-[0.99] ${
+                  active ? 'bg-[var(--ink)] text-white dark:text-[#181818]' : 'bg-[var(--surface)]'
+                }`}
+              >
+                {opt.label}
+              </button>
+            );
+          })}
+        </div>
+      </Sheet>
+
+      <Sheet open={panel === 'backup'} onClose={close} title={t.more.backupSheetTitle}>
+        <div className="space-y-2">
+          <Action icon={<Download size={18} />} label={t.more.backupJSON} sub={t.more.backupJSONSub} onClick={() => setExportLockOpen('download')} />
           {'canShare' in navigator && (
-            <Action icon={<Send size={18} />} label="Kirim backup ke WhatsApp" sub="Bagikan file backup ke chat pribadimu" onClick={() => setExportLockOpen('share')} />
+            <Action icon={<Send size={18} />} label={t.more.shareWA} sub={t.more.shareWASub} onClick={() => setExportLockOpen('share')} />
           )}
           <Action
             icon={exportingReport === 'pdf' ? <Loader2 size={18} className="animate-spin" /> : <FileText size={18} />}
-            label={exportingReport === 'pdf' ? 'Memproses…' : 'Unduh laporan PDF'}
-            sub="Ringkasan untuk dibawa ke dokter"
+            label={exportingReport === 'pdf' ? t.common.processing : t.more.downloadPDF}
+            sub={t.more.downloadPDFSub}
             onClick={handlePdfExport}
             disabled={exportingReport !== null}
           />
           <Action
             icon={exportingReport === 'excel' ? <Loader2 size={18} className="animate-spin" /> : <FileSpreadsheet size={18} />}
-            label={exportingReport === 'excel' ? 'Memproses…' : 'Unduh Excel'}
-            sub="Tabel siklus dan catatan harian"
+            label={exportingReport === 'excel' ? t.common.processing : t.more.downloadExcel}
+            sub={t.more.downloadExcelSub}
             onClick={handleExcelExport}
             disabled={exportingReport !== null}
           />
-          <Action icon={<MessageCircle size={18} />} label="Salin ringkasan ke WhatsApp" sub="Kirim ke catatan pribadimu" onClick={handleWhatsAppShare} />
+          <Action icon={<MessageCircle size={18} />} label={t.more.copySummaryWA} sub={t.more.copySummaryWASub} onClick={handleWhatsAppShare} />
           <label className="block rounded-2xl bg-[var(--surface)] px-4 py-3">
-            <span className="block text-xs text-[var(--muted)]">Nomor WhatsApp kamu (opsional), biar ringkasan langsung kebuka di chat kamu sendiri. Cuma disimpan di perangkat ini.</span>
-            <span className="mt-1 block text-xs text-[var(--muted)]">Contoh: <b className="text-[var(--ink)]">081234567890</b> atau <b className="text-[var(--ink)]">6281234567890</b></span>
+            <span className="block text-xs text-[var(--muted)]">{t.more.waNumberLabel}</span>
+            <span className="mt-1 block text-xs text-[var(--muted)]">{t.more.waNumberExample}</span>
             <input
               type="tel"
               inputMode="tel"
               autoComplete="tel"
-              placeholder="081234567890"
+              placeholder={t.more.waNumberPlaceholder}
               value={waNumber}
               onChange={(e) => {
                 setWaNumber(e.target.value);
@@ -335,17 +370,17 @@ export function MoreScreen({
               className="mt-2 w-full rounded-xl bg-[var(--card)] px-3 py-2.5 text-sm font-bold outline-none focus:ring-2 focus:ring-[var(--ink)]"
             />
           </label>
-          <Action icon={<Upload size={18} />} label="Pulihkan JSON" sub="Ganti data saat ini dengan file backup" onClick={() => fileInputRef.current?.click()} />
+          <Action icon={<Upload size={18} />} label={t.more.restoreJSON} sub={t.more.restoreJSONSub} onClick={() => fileInputRef.current?.click()} />
           <input ref={fileInputRef} type="file" accept=".json,.txt,application/json,text/plain" className="hidden" onChange={handleFileChange} />
         </div>
       </Sheet>
 
-      <Sheet open={panel === 'safety'} onClose={close} title="Keamanan data">
+      <Sheet open={panel === 'safety'} onClose={close} title={t.more.safetySheetTitle}>
         <ul className="space-y-3 text-sm text-[var(--muted)]">
-          <li><b className="text-[var(--ink)]">Hapus cache / site data.</b> Menekan "Clear Browsing Data" atau "Hapus Cache Website" di pengaturan Chrome/Safari bakal ikut menghapus semua riwayat siklusmu, jadi hati-hati, ya.</li>
-          <li><b className="text-[var(--ink)]">Amankan data berkala.</b> Biasakan Backup JSON atau salin ringkasan ke WhatsApp minimal sebulan sekali.</li>
-          <li><b className="text-[var(--ink)]">Ganti HP.</b> Sebelum pindah perangkat, unduh file .json lewat Backup, lalu pulihkan di HP barumu.</li>
-          <li><b className="text-[var(--ink)]">Kunci memori.</b> Mekar Ayu otomatis meminta browser menjaga datamu saat memori HP penuh. Kamu nggak perlu ngapa-ngapain.</li>
+          <li><b className="text-[var(--ink)]">{t.more.safetyItem1Title}</b> {t.more.safetyItem1Body}</li>
+          <li><b className="text-[var(--ink)]">{t.more.safetyItem2Title}</b> {t.more.safetyItem2Body}</li>
+          <li><b className="text-[var(--ink)]">{t.more.safetyItem3Title}</b> {t.more.safetyItem3Body}</li>
+          <li><b className="text-[var(--ink)]">{t.more.safetyItem4Title}</b> {t.more.safetyItem4Body}</li>
         </ul>
       </Sheet>
 
@@ -356,25 +391,18 @@ export function MoreScreen({
 
       <ConfirmDialog
         open={confirmInstallOpen}
-        title="Pasang Mekar Ayu?"
-        description="Mekar Ayu bakal muncul di layar utama HP-mu kayak aplikasi biasa, jadi lebih cepat dibuka dan tetap bisa dipakai pas offline. Semua datamu tetap 100% tersimpan di perangkat ini."
-        confirmLabel="Pasang"
+        title={t.more.installConfirmTitle}
+        description={t.more.installConfirmBody}
+        confirmLabel={t.more.installConfirmLabel}
         onConfirm={handleConfirmInstall}
         onCancel={() => setConfirmInstallOpen(false)}
       />
 
       <ConfirmDialog
         open={!!pendingImport}
-        title="Ganti dengan data backup?"
-        description={
-          pendingImport && (
-            <>
-              File ini berisi <b>{pendingImport.cycleCount} siklus</b> dan <b>{pendingImport.logCount} catatan harian</b>. Melanjutkan akan{' '}
-              <b className="text-red-600 dark:text-red-400">menghapus dan mengganti seluruh data saat ini</b> dengan isi file ini. Tindakan ini tidak bisa dibatalkan.
-            </>
-          )
-        }
-        confirmLabel="Ya, Ganti Data"
+        title={t.more.importConfirmTitle}
+        description={pendingImport && t.more.importConfirmBody(pendingImport.cycleCount, pendingImport.logCount)}
+        confirmLabel={t.more.importConfirmLabel}
         destructive
         onConfirm={confirmImport}
         onCancel={() => setPendingImport(null)}
@@ -383,8 +411,8 @@ export function MoreScreen({
       <PasswordDialog
         open={!!exportLockOpen}
         mode="set"
-        title="Kunci file backup?"
-        description="Tambahkan kata sandi supaya isi file ini tidak bisa dibaca orang lain kalau tersimpan di Drive, email, atau HP yang hilang. Simpan baik-baik, ya, karena tanpa kata sandi ini file tidak bisa dipulihkan."
+        title={t.more.lockExportTitle}
+        description={t.more.lockExportBody}
         busy={exportBusy}
         onSubmit={handleExportSubmit}
         onCancel={() => setExportLockOpen(null)}
@@ -398,8 +426,8 @@ export function MoreScreen({
       <PasswordDialog
         open={!!pendingLockedFile}
         mode="unlock"
-        title="File ini terkunci"
-        description="Masukkan kata sandi yang dipakai saat file backup ini dibuat."
+        title={t.more.unlockTitle}
+        description={t.more.unlockBody}
         error={unlockError}
         busy={unlockBusy}
         onSubmit={handleUnlockSubmit}
@@ -411,16 +439,11 @@ export function MoreScreen({
 
       <ConfirmDialog
         open={confirmDeleteOpen}
-        title="Hapus semua data?"
-        description={
-          <>
-            Seluruh riwayat siklus, gejala, dan catatan harian di perangkat ini akan{' '}
-            <b className="text-red-600 dark:text-red-400">dihapus permanen dan tidak bisa dikembalikan</b>. Pastikan kamu sudah membackup data yang ingin disimpan.
-          </>
-        }
-        confirmLabel="Ya, Hapus Semua"
+        title={t.more.deleteConfirmTitle}
+        description={t.more.deleteConfirmBody()}
+        confirmLabel={t.more.deleteConfirmLabel}
         destructive
-        requireText="HAPUS"
+        requireText={t.more.deleteConfirmRequireText}
         onConfirm={confirmDelete}
         onCancel={() => setConfirmDeleteOpen(false)}
       />

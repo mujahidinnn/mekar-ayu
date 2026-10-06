@@ -1,11 +1,11 @@
 import { useMemo } from 'react';
 import { format, parseISO } from 'date-fns';
-import { id as localeId } from 'date-fns/locale';
 import { Sheet } from './ui/Sheet';
 import type { CycleEntry, DailyLog } from '../db/schema';
 import type { CycleStats } from '../lib/cycleMath';
-import { SYMPTOM_OPTIONS } from '../data/phases';
+import { getSymptomOptions } from '../data/phases';
 import { SymptomIcon } from './SymptomIcon';
+import { useI18n } from '../lib/i18n';
 
 interface HistorySheetProps {
   open: boolean;
@@ -23,6 +23,7 @@ const BAR_WIDTH = 28;
 const BAR_GAP = 10;
 
 export function HistorySheet({ open, onClose, cycles, dailyLogs, stats }: HistorySheetProps) {
+  const { t, dateFnsLocale } = useI18n();
   const sortedCycles = useMemo(() => [...cycles].sort((a, b) => a.startDate.localeCompare(b.startDate)), [cycles]);
 
   const recentCyclesWithLength = useMemo(
@@ -35,34 +36,35 @@ export function HistorySheet({ open, onClose, cycles, dailyLogs, stats }: Histor
     for (const log of dailyLogs) {
       for (const s of log.symptoms) counts.set(s, (counts.get(s) ?? 0) + 1);
     }
-    return SYMPTOM_OPTIONS.map((opt) => ({ ...opt, count: counts.get(opt.key) ?? 0 }))
+    return getSymptomOptions(t)
+      .map((opt) => ({ ...opt, count: counts.get(opt.key) ?? 0 }))
       .filter((s) => s.count > 0)
       .sort((a, b) => b.count - a.count)
       .slice(0, 6);
-  }, [dailyLogs]);
+  }, [dailyLogs, t]);
 
   const maxDay = Math.max(NORMAL_MAX + 5, ...recentCyclesWithLength.map((c) => c.cycleLength), 1);
   const maxSymptomCount = Math.max(1, ...symptomCounts.map((s) => s.count));
   const chartWidth = Math.max(recentCyclesWithLength.length * (BAR_WIDTH + BAR_GAP) + BAR_GAP, 280);
 
   return (
-    <Sheet open={open} onClose={onClose} title="Riwayat & Tren Siklus">
+    <Sheet open={open} onClose={onClose} title={t.historySheet.title}>
       <div className="space-y-6 pb-4">
         <div className="grid grid-cols-3 gap-2 text-center">
-          <StatTile label="Rata-rata Siklus" value={`${stats.avgCycleLength}h`} />
-          <StatTile label="Rata-rata Menstruasi" value={`${stats.avgPeriodLength}h`} />
-          <StatTile label="Siklus Tercatat" value={`${cycles.length}`} />
+          <StatTile label={t.historySheet.avgCycle} value={t.historySheet.daysSuffix(stats.avgCycleLength)} />
+          <StatTile label={t.historySheet.avgPeriod} value={t.historySheet.daysSuffix(stats.avgPeriodLength)} />
+          <StatTile label={t.historySheet.recordedCycles} value={`${cycles.length}`} />
         </div>
 
         <section>
-          <h3 className="mb-1 text-sm font-semibold text-[var(--ink)]">Panjang Siklus (hari)</h3>
-          <p className="mb-3 text-xs text-[var(--muted)]">Rentang umum menurut ACOG: 21–35 hari (area terang di grafik). Tiap tubuh punya ritmenya sendiri.</p>
+          <h3 className="mb-1 text-sm font-semibold text-[var(--ink)]">{t.historySheet.cycleLengthTitle}</h3>
+          <p className="mb-3 text-xs text-[var(--muted)]">{t.historySheet.cycleLengthHint}</p>
           {recentCyclesWithLength.length === 0 ? (
-            <EmptyNote text="Trenmu bakal kelihatan setelah beberapa siklus tercatat." />
+            <EmptyNote text={t.historySheet.emptyTrend} />
           ) : (
             <>
               <div className="overflow-x-auto">
-                <svg width={chartWidth} height={CHART_HEIGHT + 30} role="img" aria-label="Grafik panjang siklus per periode">
+                <svg width={chartWidth} height={CHART_HEIGHT + 30} role="img" aria-label={t.historySheet.chartAriaLabel}>
                   <rect
                     x={0}
                     y={CHART_HEIGHT - (NORMAL_MAX / maxDay) * CHART_HEIGHT}
@@ -111,17 +113,17 @@ export function HistorySheet({ open, onClose, cycles, dailyLogs, stats }: Histor
                 </svg>
               </div>
               <div className="mt-2 flex items-center justify-center gap-4 text-[0.6875rem] text-[var(--muted)]">
-                <LegendDot className="bg-[#FFA7DC]" label="Umum (21–35 hari)" />
-                <LegendDot className="bg-amber-500" label="Di luar rentang umum" />
+                <LegendDot className="bg-[#FFA7DC]" label={t.historySheet.legendNormal} />
+                <LegendDot className="bg-amber-500" label={t.historySheet.legendAbnormal} />
               </div>
             </>
           )}
         </section>
 
         <section>
-          <h3 className="mb-3 text-sm font-semibold text-[var(--ink)]">Sinyal Tubuh Tersering</h3>
+          <h3 className="mb-3 text-sm font-semibold text-[var(--ink)]">{t.historySheet.topSignalsTitle}</h3>
           {symptomCounts.length === 0 ? (
-            <EmptyNote text="Belum ada sinyal tubuh yang tercatat." />
+            <EmptyNote text={t.historySheet.emptySignals} />
           ) : (
             <div className="space-y-2">
               {symptomCounts.map((s) => (
@@ -144,27 +146,27 @@ export function HistorySheet({ open, onClose, cycles, dailyLogs, stats }: Histor
         </section>
 
         <section>
-          <h3 className="mb-2 text-sm font-semibold text-[var(--ink)]">Daftar Riwayat Siklus</h3>
+          <h3 className="mb-2 text-sm font-semibold text-[var(--ink)]">{t.historySheet.historyListTitle}</h3>
           {sortedCycles.length === 0 ? (
-            <EmptyNote text="Belum ada siklus yang tercatat. Yuk, mulai dari hari pertama haidmu." />
+            <EmptyNote text={t.historySheet.emptyHistory} />
           ) : (
             <div className="overflow-hidden rounded-2xl border border-[var(--line)]">
               <table className="w-full text-left text-xs">
                 <thead className="bg-[var(--surface)] text-[var(--muted)]">
                   <tr>
-                    <th className="px-3 py-2 font-semibold">Mulai</th>
-                    <th className="px-3 py-2 font-semibold">Durasi</th>
-                    <th className="px-3 py-2 font-semibold">Siklus</th>
+                    <th className="px-3 py-2 font-semibold">{t.historySheet.colStart}</th>
+                    <th className="px-3 py-2 font-semibold">{t.historySheet.colDuration}</th>
+                    <th className="px-3 py-2 font-semibold">{t.historySheet.colCycle}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {[...sortedCycles].reverse().map((c) => (
                     <tr key={c.startDate} className="border-t border-[var(--line)]">
                       <td className="px-3 py-2 text-[var(--ink)]">
-                        {format(parseISO(c.startDate), 'd MMM yyyy', { locale: localeId })}
+                        {format(parseISO(c.startDate), 'd MMM yyyy', { locale: dateFnsLocale })}
                       </td>
-                      <td className="px-3 py-2 text-[var(--muted)]">{c.periodLength ? `${c.periodLength} hari` : '-'}</td>
-                      <td className="px-3 py-2 text-[var(--muted)]">{c.cycleLength ? `${c.cycleLength} hari` : '-'}</td>
+                      <td className="px-3 py-2 text-[var(--muted)]">{c.periodLength ? t.historySheet.daysSuffix(c.periodLength) : '-'}</td>
+                      <td className="px-3 py-2 text-[var(--muted)]">{c.cycleLength ? t.historySheet.daysSuffix(c.cycleLength) : '-'}</td>
                     </tr>
                   ))}
                 </tbody>

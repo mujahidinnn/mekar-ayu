@@ -1,6 +1,7 @@
 import * as XLSX from 'xlsx';
 import type { CycleEntry, DailyLog } from '../../db/schema';
-import { SYMPTOM_OPTIONS, MOOD_OPTIONS, FLOW_OPTIONS } from '../../data/phases';
+import { getFlowOptions, getMoodOptions, getSymptomOptions } from '../../data/phases';
+import type { Translations } from '../i18n/locales/id';
 
 function labelFor(list: readonly { key: string; label: string }[], key: string): string {
   return list.find((o) => o.key === key)?.label ?? key;
@@ -20,15 +21,20 @@ function applyDateFormat(sheet: XLSX.WorkSheet, colIndexes: number[], rowCount: 
   }
 }
 
-export function exportExcelReport(cycles: CycleEntry[], dailyLogs: DailyLog[]): void {
+export function exportExcelReport(t: Translations, cycles: CycleEntry[], dailyLogs: DailyLog[]): void {
+  const symptomOptions = getSymptomOptions(t);
+  const moodOptions = getMoodOptions(t);
+  const flowOptions = getFlowOptions(t);
+  const tr = t.export.excel;
+
   const sortedCycles = [...cycles].sort((a, b) => b.startDate.localeCompare(a.startDate));
   const cycleSheet = XLSX.utils.json_to_sheet(
     sortedCycles.map((c) => ({
-      'Tanggal Mulai': isoToDate(c.startDate),
-      'Tanggal Selesai': c.endDate ? isoToDate(c.endDate) : '',
-      'Durasi Menstruasi (hari)': c.periodLength ?? '',
-      'Panjang Siklus (hari)': c.cycleLength ?? '',
-      Catatan: c.notes || '',
+      [tr.colStartDate]: isoToDate(c.startDate),
+      [tr.colEndDate]: c.endDate ? isoToDate(c.endDate) : '',
+      [tr.colPeriodDuration]: c.periodLength ?? '',
+      [tr.colCycleLength]: c.cycleLength ?? '',
+      [tr.colNotes]: c.notes || '',
     })),
     { cellDates: true },
   );
@@ -38,11 +44,11 @@ export function exportExcelReport(cycles: CycleEntry[], dailyLogs: DailyLog[]): 
   const sortedLogs = [...dailyLogs].sort((a, b) => b.date.localeCompare(a.date));
   const logSheet = XLSX.utils.json_to_sheet(
     sortedLogs.map((l) => ({
-      Tanggal: isoToDate(l.date),
-      Flow: l.flowIntensity ? labelFor(FLOW_OPTIONS, l.flowIntensity) : '',
-      Gejala: l.symptoms.map((s) => labelFor(SYMPTOM_OPTIONS, s)).join(', '),
-      Mood: l.moods.map((m) => labelFor(MOOD_OPTIONS, m)).join(', '),
-      Catatan: l.notes || '',
+      [tr.colDate]: isoToDate(l.date),
+      [tr.colFlow]: l.flowIntensity ? labelFor(flowOptions, l.flowIntensity) : '',
+      [tr.colSymptoms]: l.symptoms.map((s) => labelFor(symptomOptions, s)).join(', '),
+      [tr.colMood]: l.moods.map((m) => labelFor(moodOptions, m)).join(', '),
+      [tr.colNotes]: l.notes || '',
     })),
     { cellDates: true },
   );
@@ -50,8 +56,8 @@ export function exportExcelReport(cycles: CycleEntry[], dailyLogs: DailyLog[]): 
   applyDateFormat(logSheet, [0], sortedLogs.length);
 
   const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, cycleSheet, 'Riwayat Siklus');
-  XLSX.utils.book_append_sheet(workbook, logSheet, 'Catatan Harian');
+  XLSX.utils.book_append_sheet(workbook, cycleSheet, tr.sheetCycles);
+  XLSX.utils.book_append_sheet(workbook, logSheet, tr.sheetLogs);
 
-  XLSX.writeFile(workbook, `mekarayu-data-${new Date().toISOString().split('T')[0]}.xlsx`);
+  XLSX.writeFile(workbook, `${tr.filenamePrefix}-${new Date().toISOString().split('T')[0]}.xlsx`);
 }

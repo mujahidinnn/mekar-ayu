@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Eye, EyeOff, Lock } from 'lucide-react';
+import { useI18n } from '../../lib/i18n';
 
 interface PasswordDialogProps {
   open: boolean;
@@ -23,6 +24,7 @@ function PasswordField({
   onChange: (v: string) => void;
   placeholder: string;
 }) {
+  const { t } = useI18n();
   const [visible, setVisible] = useState(false);
 
   return (
@@ -37,7 +39,7 @@ function PasswordField({
       <button
         type="button"
         onClick={() => setVisible((v) => !v)}
-        aria-label={visible ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi'}
+        aria-label={visible ? t.passwordDialog.hidePassword : t.passwordDialog.showPassword}
         className="absolute right-0 top-0 flex h-full w-10 items-center justify-center text-[var(--muted)]"
       >
         {visible ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -47,6 +49,7 @@ function PasswordField({
 }
 
 export function PasswordDialog({ open, mode, title, description, error, busy, onSubmit, onCancel, onSkip }: PasswordDialogProps) {
+  const { t } = useI18n();
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [localError, setLocalError] = useState<string | null>(null);
@@ -64,11 +67,11 @@ export function PasswordDialog({ open, mode, title, description, error, busy, on
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (password.length < 4) {
-      setLocalError('Kata sandi minimal 4 karakter.');
+      setLocalError(t.passwordDialog.errorTooShort);
       return;
     }
     if (mode === 'set' && password !== confirm) {
-      setLocalError('Kedua kata sandinya belum sama. Cek lagi, ya.');
+      setLocalError(t.passwordDialog.errorMismatch);
       return;
     }
     setLocalError(null);
@@ -77,7 +80,7 @@ export function PasswordDialog({ open, mode, title, description, error, busy, on
 
   return (
     <div className="fixed inset-0 z-[60] !m-0 flex items-center justify-center p-6">
-      <button aria-label="Batal" className="absolute inset-0 bg-[#181818]/50 animate-fade-in" onClick={onCancel} />
+      <button aria-label={t.common.cancel} className="absolute inset-0 bg-[#181818]/50 animate-fade-in" onClick={onCancel} />
       <form onSubmit={handleSubmit} className="relative w-full max-w-sm rounded-3xl bg-[var(--card)] p-5 shadow-2xl animate-fade-in">
         <div className="flex items-center gap-2">
           <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#FFA7DC] text-[#181818]">
@@ -88,8 +91,8 @@ export function PasswordDialog({ open, mode, title, description, error, busy, on
         {description && <div className="mt-2 text-sm leading-relaxed text-[var(--muted)]">{description}</div>}
 
         <div className="mt-4 space-y-2">
-          <PasswordField value={password} onChange={setPassword} placeholder="Kata sandi" />
-          {mode === 'set' && <PasswordField value={confirm} onChange={setConfirm} placeholder="Ulangi kata sandi" />}
+          <PasswordField value={password} onChange={setPassword} placeholder={t.passwordDialog.passwordPlaceholder} />
+          {mode === 'set' && <PasswordField value={confirm} onChange={setConfirm} placeholder={t.passwordDialog.repeatPasswordPlaceholder} />}
           {(localError || error) && <p className="text-xs font-medium text-red-600 dark:text-red-400">{localError || error}</p>}
         </div>
 
@@ -100,7 +103,7 @@ export function PasswordDialog({ open, mode, title, description, error, busy, on
               disabled={busy}
               className="min-h-11 w-full rounded-2xl bg-[var(--ink)] text-sm font-semibold text-white dark:text-[#181818] transition active:scale-95 disabled:opacity-60"
             >
-              {busy ? 'Memproses…' : 'Kunci & Unduh'}
+              {busy ? t.common.processing : t.passwordDialog.lockAndDownload}
             </button>
             <div className="flex gap-2">
               <button
@@ -108,14 +111,14 @@ export function PasswordDialog({ open, mode, title, description, error, busy, on
                 onClick={onCancel}
                 className="min-h-11 flex-1 rounded-2xl bg-[var(--surface)] text-sm font-semibold text-[var(--ink)] active:scale-95 transition"
               >
-                Batal
+                {t.common.cancel}
               </button>
               <button
                 type="button"
                 onClick={onSkip}
                 className="min-h-11 flex-1 rounded-2xl bg-[var(--surface)] text-sm font-semibold text-[var(--ink)] active:scale-95 transition"
               >
-                Unduh Tanpa Sandi
+                {t.passwordDialog.downloadWithoutPassword}
               </button>
             </div>
           </div>
@@ -126,14 +129,14 @@ export function PasswordDialog({ open, mode, title, description, error, busy, on
               onClick={onCancel}
               className="min-h-11 flex-1 rounded-2xl bg-[var(--surface)] text-sm font-semibold text-[var(--ink)] active:scale-95 transition"
             >
-              Batal
+              {t.common.cancel}
             </button>
             <button
               type="submit"
               disabled={busy}
               className="min-h-11 flex-1 rounded-2xl bg-[var(--ink)] text-sm font-semibold text-white dark:text-[#181818] transition active:scale-95 disabled:opacity-60"
             >
-              {busy ? 'Memproses…' : 'Buka Kunci'}
+              {busy ? t.common.processing : t.passwordDialog.unlock}
             </button>
           </div>
         )}

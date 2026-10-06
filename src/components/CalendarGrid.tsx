@@ -4,6 +4,7 @@ import type { DailyLog } from '../db/schema';
 import type { CycleStats } from '../lib/cycleMath';
 import { getDayBadges } from '../lib/dayBadges';
 import { MoodFace } from './MoodFace';
+import { useI18n } from '../lib/i18n';
 
 interface CalendarGridProps {
   visibleMonth: Date;
@@ -15,10 +16,10 @@ interface CalendarGridProps {
   mode: 'mood' | 'cycle';
 }
 
-const WEEKDAYS = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
 const CELL = 'relative mx-auto flex h-11 w-11 items-center md:h-14 md:w-14 justify-center rounded-[16px] transition active:scale-95';
 
 export function CalendarGrid({ visibleMonth, stats, dailyLogs, onSelectDate, onSwipePrev, onSwipeNext, mode }: CalendarGridProps) {
+  const { t, dateFnsLocale } = useI18n();
   const logsByDate = useMemo(() => new Map(dailyLogs.map((l) => [l.date, l])), [dailyLogs]);
 
   const days = useMemo(() => {
@@ -43,8 +44,8 @@ export function CalendarGrid({ visibleMonth, stats, dailyLogs, onSelectDate, onS
   return (
     <div className="px-5 py-4" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
       <div className="mb-3 grid grid-cols-7 text-center text-sm font-bold text-[var(--muted)]">
-        {WEEKDAYS.map((d) => (
-          <div key={d}>{d}</div>
+        {t.calendarGrid.weekdays.map((d, i) => (
+          <div key={i}>{d}</div>
         ))}
       </div>
       <div className="grid grid-cols-7 gap-y-2">
@@ -54,7 +55,7 @@ export function CalendarGrid({ visibleMonth, stats, dailyLogs, onSelectDate, onS
           const badges = getDayBadges(dateStr, stats, log);
           const inMonth = isSameMonth(day, visibleMonth);
           const moodKey = log?.moods?.[0];
-          const label = format(day, 'd MMMM');
+          const label = format(day, 'd MMMM', { locale: dateFnsLocale });
           const ring = isToday(day) ? 'ring-2 ring-[var(--ink)] ring-offset-2 ring-offset-[var(--wash-mid)]' : '';
 
           if (mode === 'mood' && !inMonth) return <div key={dateStr} />;
@@ -98,13 +99,13 @@ export function CalendarGrid({ visibleMonth, stats, dailyLogs, onSelectDate, onS
 
       {mode === 'cycle' && (
         <div className="mx-auto mt-5 flex w-fit flex-wrap items-center justify-center gap-x-4 gap-y-2 rounded-3xl bg-white/70 px-4 py-2 text-xs font-bold dark:bg-[var(--card)]">
-          <LegendDot color="#E5484D" label="Haid" />
-          <LegendDot color="#FFC0DD" label="Perkiraan haid" className="border border-dashed border-[#E5484D]" />
-          <LegendDot color="#F9B892" label="Masa subur" />
-          <LegendDot color="#D7C2F7" label="Ovulasi" />
+          <LegendDot color="#E5484D" label={t.calendarGrid.legendPeriod} />
+          <LegendDot color="#FFC0DD" label={t.calendarGrid.legendPredicted} className="border border-dashed border-[#E5484D]" />
+          <LegendDot color="#F9B892" label={t.calendarGrid.legendFertile} />
+          <LegendDot color="#D7C2F7" label={t.calendarGrid.legendOvulation} />
           <span className="inline-flex items-center gap-1.5">
             <span className="mx-[3px] h-1 w-1 rounded-full bg-[var(--muted)]" />
-            Ada catatan
+            {t.calendarGrid.legendHasNote}
           </span>
         </div>
       )}

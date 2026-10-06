@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Sheet } from './ui/Sheet';
 import { Share, ListPlus, LayoutGrid, Menu, DownloadCloud, Smartphone } from 'lucide-react';
+import { useI18n } from '../lib/i18n';
 
 interface PwaInstallSheetProps {
   open: boolean;
@@ -9,63 +10,20 @@ interface PwaInstallSheetProps {
 
 type Platform = 'ios' | 'android';
 
-const STEPS: Record<Platform, { icon: React.ReactNode; title: string; description: string }[]> = {
-  ios: [
-    {
-      icon: <Share size={20} />,
-      title: 'Ketuk tombol Share',
-      description: 'Di Safari, ketuk ikon Share (kotak dengan panah ke atas) di bagian bawah layar.',
-    },
-    {
-      icon: <ListPlus size={20} />,
-      title: 'Pilih "Add to Home Screen"',
-      description: 'Scroll ke bawah pada daftar menu, lalu ketuk "Tambah ke Layar Utama" / "Add to Home Screen".',
-    },
-    {
-      icon: <Smartphone size={20} />,
-      title: 'Ketuk "Add" / "Tambah"',
-      description: 'Konfirmasi nama aplikasi lalu ketuk "Add" di pojok kanan atas.',
-    },
-    {
-      icon: <LayoutGrid size={20} />,
-      title: 'Selesai!',
-      description: 'Ikon Mekar Ayu akan muncul di layar utama HP-mu, bisa dibuka seperti aplikasi biasa tanpa membuka browser.',
-    },
-  ],
-  android: [
-    {
-      icon: <Menu size={20} />,
-      title: 'Ketuk menu titik tiga',
-      description: 'Di Chrome, ketuk ikon titik tiga (⋮) di pojok kanan atas.',
-    },
-    {
-      icon: <DownloadCloud size={20} />,
-      title: 'Pilih "Install app"',
-      description: 'Cari dan ketuk "Install app" atau "Tambahkan ke layar Utama" pada menu yang muncul.',
-    },
-    {
-      icon: <Smartphone size={20} />,
-      title: 'Ketuk "Install" / "Pasang"',
-      description: 'Konfirmasi pemasangan pada dialog yang muncul.',
-    },
-    {
-      icon: <LayoutGrid size={20} />,
-      title: 'Selesai!',
-      description: 'Mekar Ayu akan terpasang seperti aplikasi native, lengkap dengan ikonnya sendiri di layar utama.',
-    },
-  ],
+const STEP_ICONS: Record<Platform, React.ReactNode[]> = {
+  ios: [<Share size={20} />, <ListPlus size={20} />, <Smartphone size={20} />, <LayoutGrid size={20} />],
+  android: [<Menu size={20} />, <DownloadCloud size={20} />, <Smartphone size={20} />, <LayoutGrid size={20} />],
 };
 
 export function PwaInstallSheet({ open, onClose }: PwaInstallSheetProps) {
+  const { t } = useI18n();
   const [platform, setPlatform] = useState<Platform>('ios');
+  const steps = t.pwaInstall[platform];
 
   return (
-    <Sheet open={open} onClose={onClose} title="Cara Pasang ke Layar Utama">
+    <Sheet open={open} onClose={onClose} title={t.pwaInstall.title}>
       <div className="space-y-5 pb-4">
-        <p className="text-sm text-[var(--muted)]">
-          Pasang Mekar Ayu di layar utama HP-mu biar bisa dibuka kayak aplikasi biasa: lebih cepat, tetap bisa dipakai offline, dan datamu
-          tetap 100% tersimpan di perangkatmu.
-        </p>
+        <p className="text-sm text-[var(--muted)]">{t.pwaInstall.intro}</p>
 
         <div className="flex rounded-full bg-[var(--surface)] p-1">
           <button
@@ -74,7 +32,7 @@ export function PwaInstallSheet({ open, onClose }: PwaInstallSheetProps) {
               platform === 'ios' ? 'bg-[var(--card)] text-[var(--ink)] shadow-sm' : 'text-[var(--muted)]'
             }`}
           >
-            iPhone (Safari)
+            {t.pwaInstall.iosTab}
           </button>
           <button
             onClick={() => setPlatform('android')}
@@ -84,21 +42,21 @@ export function PwaInstallSheet({ open, onClose }: PwaInstallSheetProps) {
                 : 'text-[var(--muted)]'
             }`}
           >
-            Android (Chrome)
+            {t.pwaInstall.androidTab}
           </button>
         </div>
 
         <ol className="space-y-4">
-          {STEPS[platform].map((step, i) => (
+          {steps.map((step, i) => (
             <li key={step.title} className="flex gap-3">
               <div className="flex shrink-0 flex-col items-center">
                 <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#FFA7DC] text-[#181818]">
-                  {step.icon}
+                  {STEP_ICONS[platform][i]}
                 </span>
-                {i < STEPS[platform].length - 1 && <span className="mt-1 h-full w-px flex-1 bg-[var(--line)]" />}
+                {i < steps.length - 1 && <span className="mt-1 h-full w-px flex-1 bg-[var(--line)]" />}
               </div>
               <div className="pb-2">
-                <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">Langkah {i + 1}</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">{t.pwaInstall.stepLabel(i + 1)}</p>
                 <p className="text-sm font-semibold text-[var(--ink)]">{step.title}</p>
                 <p className="mt-0.5 text-sm text-[var(--muted)]">{step.description}</p>
               </div>
@@ -106,10 +64,7 @@ export function PwaInstallSheet({ open, onClose }: PwaInstallSheetProps) {
           ))}
         </ol>
 
-        <p className="rounded-2xl bg-[#FFE3A3] p-3 text-xs text-[#181818]">
-          Tampilan menu bisa sedikit berbeda tergantung versi browser. Fitur ini butuh Safari (iPhone) atau Chrome/Edge (Android); beberapa
-          browser lain mungkin tidak mendukung "Add to Home Screen".
-        </p>
+        <p className="rounded-2xl bg-[#FFE3A3] p-3 text-xs text-[#181818]">{t.pwaInstall.footerNote}</p>
       </div>
     </Sheet>
   );

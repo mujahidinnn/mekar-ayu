@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { differenceInCalendarDays, format, parseISO } from 'date-fns';
-import { id as localeId } from 'date-fns/locale';
 import { ArrowRight, CircleHelp, PenLine } from 'lucide-react';
 import { db } from '../../db/schema';
 import type { DailyLog } from '../../db/schema';
 import { withSync } from '../../lib/syncStatus';
-import { MOOD_OPTIONS, PHASE_ICON, PHASE_TINT, PHASES, selfCareTips } from '../../data/phases';
+import { getMoodOptions, PHASE_ICON, PHASE_TINT, selfCareTips } from '../../data/phases';
+import type { PhaseKey } from '../../data/phases';
 import type { CycleStats } from '../../lib/cycleMath';
 import { CareIcon } from '../CareIcon';
 import { Logo } from '../Logo';
@@ -13,6 +13,9 @@ import { MoodFace } from '../MoodFace';
 import { RedFlagBanner } from '../RedFlagBanner';
 import { Flower } from '../WelcomeScreen';
 import { Sheet } from '../ui/Sheet';
+import { useI18n } from '../../lib/i18n';
+import type { DateFnsLocale } from '../../lib/i18n';
+import type { Translations } from '../../lib/i18n/locales/id';
 
 interface HomeScreenProps {
   stats: CycleStats;
@@ -38,15 +41,16 @@ async function toggleTodayMood(todayLog: DailyLog | undefined, dateStr: string, 
   );
 }
 
-function fmt(iso: string, pattern = 'd MMM') {
-  return format(parseISO(iso), pattern, { locale: localeId });
+function fmt(iso: string, dateFnsLocale: DateFnsLocale, pattern = 'd MMM') {
+  return format(parseISO(iso), pattern, { locale: dateFnsLocale });
 }
 
 export function HomeScreen({ stats, todayLog, onOpenLogEditor, onSeeAll }: HomeScreenProps) {
+  const { t, dateFnsLocale } = useI18n();
   const todayStr = format(new Date(), 'yyyy-MM-dd');
   const [phaseOpen, setPhaseOpen] = useState(false);
-  const phase = stats.currentPhase ? PHASES[stats.currentPhase] : null;
-  const tips = selfCareTips(stats.currentPhase, todayLog?.symptoms, todayLog?.moods);
+  const phase = stats.currentPhase ? t.phases[stats.currentPhase] : null;
+  const tips = selfCareTips(t, stats.currentPhase, todayLog?.symptoms, todayLog?.moods);
   const daysLeft = stats.predictedNextPeriodStart
     ? differenceInCalendarDays(parseISO(stats.predictedNextPeriodStart), new Date())
     : null;
@@ -57,8 +61,8 @@ export function HomeScreen({ stats, todayLog, onOpenLogEditor, onSeeAll }: HomeS
         <div className="flex items-center gap-3">
           <Logo size={48} />
           <div>
-            <p className="text-base font-bold">Mekar Ayu</p>
-            <p className="text-xs text-[var(--muted)]">Memahami Siklusmu, Merawat Anggunmu.</p>
+            <p className="text-base font-bold" translate="no">{t.common.appName}</p>
+            <p className="text-xs text-[var(--muted)]">{t.home.appTagline}</p>
           </div>
         </div>
       </div>
@@ -69,9 +73,9 @@ export function HomeScreen({ stats, todayLog, onOpenLogEditor, onSeeAll }: HomeS
 
       <div className="space-y-6 lg:grid lg:grid-cols-2 lg:items-start lg:gap-6 lg:space-y-0">
       <section>
-        <h2 className="text-xl font-bold">Gimana mood kamu hari ini?</h2>
+        <h2 className="text-xl font-bold">{t.home.moodQuestion}</h2>
         <div className="no-scrollbar -mx-5 flex gap-3 overflow-x-auto px-5 pb-1 pt-4 md:mx-0 md:flex-wrap md:gap-y-6 md:overflow-visible md:px-0">
-          {MOOD_OPTIONS.map((opt) => {
+          {getMoodOptions(t).map((opt) => {
             const active = !!todayLog?.moods.includes(opt.key);
             return (
               <button
@@ -92,9 +96,9 @@ export function HomeScreen({ stats, todayLog, onOpenLogEditor, onSeeAll }: HomeS
 
       <section>
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-xl font-bold">Perkiraan</h2>
+          <h2 className="text-xl font-bold">{t.home.forecastTitle}</h2>
           <button onClick={onSeeAll} className="flex items-center gap-1.5 text-sm font-bold">
-            Lihat semua <ArrowRight size={16} />
+            {t.home.seeAll} <ArrowRight size={16} />
           </button>
         </div>
         {phase && stats.currentPhase ? (
@@ -106,38 +110,46 @@ export function HomeScreen({ stats, todayLog, onOpenLogEditor, onSeeAll }: HomeS
                 rotate={18}
               />
               <p className="relative text-xs text-[var(--muted)]">{phase.dayRange}</p>
-              <p className="relative mt-1 text-base font-bold">{phase.label.replace('Fase ', '')}</p>
+              <p className="relative mt-1 text-base font-bold">{phase.label}</p>
               <p className="relative mt-1 text-xs leading-relaxed text-[var(--muted)]">{phase.summary}</p>
             </button>
             <div className="card p-4">
-              <p className="text-xs text-[var(--muted)]">{daysLeft !== null && daysLeft > 0 ? `${daysLeft} hari lagi` : 'Diperkirakan hari ini'}</p>
-              <p className="mt-1 text-base font-bold">{stats.predictedNextPeriodStart && `Haid ${fmt(stats.predictedNextPeriodStart)}`}</p>
+              <p className="text-xs text-[var(--muted)]">
+                {daysLeft !== null && daysLeft > 0
+                  ? t.home.daysLeft(daysLeft)
+                  : daysLeft !== null && daysLeft < 0
+                    ? t.home.overdue(-daysLeft)
+                    : t.home.dueToday}
+              </p>
+              <p className="mt-1 text-base font-bold">{stats.predictedNextPeriodStart && t.home.periodOn(fmt(stats.predictedNextPeriodStart, dateFnsLocale))}</p>
               <p className="mt-4 text-xs text-[var(--muted)]">
-                {stats.fertileWindowStart && stats.fertileWindowEnd && `Subur ${fmt(stats.fertileWindowStart)}–${fmt(stats.fertileWindowEnd)}`}
+                {stats.fertileWindowStart &&
+                  stats.fertileWindowEnd &&
+                  t.home.fertileOn(`${fmt(stats.fertileWindowStart, dateFnsLocale)}–${fmt(stats.fertileWindowEnd, dateFnsLocale)}`)}
               </p>
             </div>
           </div>
         ) : (
           <button onClick={onOpenLogEditor} className="card relative w-full overflow-hidden p-5 text-left transition active:scale-[0.99]">
             <Flower className="pointer-events-none absolute -right-8 top-1/2 h-28 w-28 -translate-y-1/2 opacity-50" fill="#F4EAEC" rotate={18} />
-            <p className="relative text-base font-bold">Belum ada perkiraan</p>
-            <p className="relative mt-1 max-w-[80%] text-sm text-[var(--muted)]">Catat haid pertamamu dulu, nanti fase, jadwal haid, dan masa subur muncul di sini.</p>
+            <p className="relative text-base font-bold">{t.home.noForecastTitle}</p>
+            <p className="relative mt-1 max-w-[80%] text-sm text-[var(--muted)]">{t.home.noForecastBody}</p>
           </button>
         )}
       </section>
       </div>
 
       <section>
-        <h2 className="mb-3 text-xl font-bold">Self-care</h2>
+        <h2 className="mb-3 text-xl font-bold">{t.home.selfCareTitle}</h2>
         {tips.length > 0 ? (
           <div className="no-scrollbar -mx-5 flex gap-3 overflow-x-auto px-5 pb-1 md:mx-0 md:grid md:grid-cols-2 md:overflow-visible md:px-0 lg:grid-cols-3">
             {tips.map((tip, i) => (
-              <div key={tip.tip} className="card w-[76%] shrink-0 p-4 md:w-auto">
+              <div key={`${tip.care}-${i}`} className="card w-[76%] shrink-0 p-4 md:w-auto">
                 <span
                   className="flex h-14 w-14 items-center justify-center rounded-full text-[#181818]"
                   style={{ background: TIP_TINT[i % TIP_TINT.length] }}
                 >
-                  <CareIcon name={tip.title} size={34} />
+                  <CareIcon name={tip.care} size={34} />
                 </span>
                 <p className="mt-3 truncate text-xs text-[var(--muted)]">{tip.reason}</p>
                 <p className="text-base font-bold">{tip.title}</p>
@@ -147,8 +159,8 @@ export function HomeScreen({ stats, todayLog, onOpenLogEditor, onSeeAll }: HomeS
           </div>
         ) : (
           <button onClick={onOpenLogEditor} className="card w-full p-5 text-left transition active:scale-[0.99]">
-            <p className="text-base font-bold">Yuk, catat hari pertama haidmu</p>
-            <p className="mt-1 text-sm text-[var(--muted)]">Nanti tips self-care yang cocok sama fasemu muncul di sini.</p>
+            <p className="text-base font-bold">{t.home.selfCareEmptyTitle}</p>
+            <p className="mt-1 text-sm text-[var(--muted)]">{t.home.selfCareEmptyBody}</p>
           </button>
         )}
       </section>
@@ -158,19 +170,19 @@ export function HomeScreen({ stats, todayLog, onOpenLogEditor, onSeeAll }: HomeS
           <div className="space-y-4 text-sm">
             <p className="text-[var(--muted)]">{phase.dayRange}</p>
             <div>
-              <p className="mb-1 font-bold">Yang lagi terjadi di tubuhmu</p>
+              <p className="mb-1 font-bold">{t.home.phaseSheetBodyNow}</p>
               <p className="text-[var(--muted)]">{phase.hormonal}</p>
             </div>
             <div>
-              <p className="mb-1 font-bold">Yang mungkin kamu rasakan</p>
+              <p className="mb-1 font-bold">{t.home.phaseSheetBodyFeel}</p>
               <p className="text-[var(--muted)]">{phase.bodyExperience}</p>
             </div>
             <div>
-              <p className="mb-1 font-bold">Tips self-care</p>
+              <p className="mb-1 font-bold">{t.home.phaseSheetSelfCare}</p>
               <ul className="space-y-1.5">
                 {phase.selfCare.map((tip) => (
-                  <li key={tip.title} className="text-[var(--muted)]">
-                    <span className="font-bold text-[var(--ink)]">{tip.title}:</span> {tip.tip}
+                  <li key={tip.care} className="text-[var(--muted)]">
+                    <span className="font-bold text-[var(--ink)]">{t.careTitles[tip.care]}:</span> {tip.tip}
                   </li>
                 ))}
               </ul>
@@ -189,18 +201,21 @@ function TodayCard({
   onOpenLogEditor,
 }: {
   stats: CycleStats;
-  phase: (typeof PHASES)[keyof typeof PHASES] | null;
+  phase: Translations['phases'][PhaseKey] | null;
   daysLeft: number | null;
   onOpenLogEditor: () => void;
 }) {
-  const today = format(new Date(), 'EEEE, d MMMM', { locale: localeId });
+  const { t, dateFnsLocale } = useI18n();
+  const today = format(new Date(), 'EEEE, d MMMM', { locale: dateFnsLocale });
   const title = stats.isPeriodActive
-    ? `Menstruasi hari ke-${stats.currentCycleDay ?? '–'}`
+    ? t.home.todayActive(stats.currentCycleDay ?? '–')
     : stats.predictedNextPeriodStart
       ? daysLeft !== null && daysLeft > 0
-        ? `${daysLeft} hari menuju haid`
-        : 'Haid diperkirakan hari ini'
-      : 'Yuk, kenali siklusmu';
+        ? t.home.todayCountdown(daysLeft)
+        : daysLeft !== null && daysLeft < 0
+          ? t.home.todayOverdue(-daysLeft)
+          : t.home.todayDueToday
+      : t.home.todayUnknown;
 
   return (
     <button
@@ -216,8 +231,8 @@ function TodayCard({
           {stats.currentPhase ? <CareIcon name={PHASE_ICON[stats.currentPhase]} size={22} /> : <CircleHelp size={20} />}
         </span>
         <div className="min-w-0 flex-1">
-          <p className="truncate text-base font-bold">{phase ? phase.label : 'Belum ada catatan'}</p>
-          <p className="text-sm text-[#181818]/70">{phase ? phase.dayRange : 'Ketuk untuk mencatat hari pertamamu'}</p>
+          <p className="truncate text-base font-bold">{phase ? phase.label : t.home.noLogTitle}</p>
+          <p className="text-sm text-[#181818]/70">{phase ? phase.dayRange : t.home.noLogSubtitle}</p>
         </div>
         <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#181818] text-white">
           <PenLine size={17} />

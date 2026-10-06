@@ -1,5 +1,6 @@
 import { ArrowRight } from 'lucide-react';
 import { Logo } from './Logo';
+import { useI18n } from '../lib/i18n';
 
 interface WelcomeScreenProps {
   onStart: () => void;
@@ -20,6 +21,7 @@ export function Flower({ className, fill, rotate = 0 }: { className: string; fil
 }
 
 export function WelcomeScreen({ onStart }: WelcomeScreenProps) {
+  const { t } = useI18n();
   return (
     <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-6 text-center text-[#181818]">
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(172deg,#FDA9A8_0%,#F98FB3_18%,#FBA5D5_34%,#F1C4E6_52%,#EAC0EE_68%,#DCC0F2_82%,#F8EBF2_100%)]" />
@@ -36,21 +38,19 @@ export function WelcomeScreen({ onStart }: WelcomeScreenProps) {
       <div className="relative z-10">
         <div className="mb-8 flex items-center justify-center gap-2.5">
           <Logo size={40} />
-          <span className="text-xl font-bold tracking-tight">Mekar Ayu</span>
+          <span className="text-xl font-bold tracking-tight" translate="no">{t.common.appName}</span>
         </div>
         <h1 className="text-[2.75rem] font-bold leading-[1.08] tracking-tight md:text-6xl">
-          Nemenin kamu
+          {t.welcome.titleLine1}
           <br />
-          di tiap fase
+          {t.welcome.titleLine2}
         </h1>
-        <p className="mx-auto mt-4 max-w-xs text-base font-medium opacity-80">
-          Kalender haid, masa subur, dan mood tracker yang privat. Semua data cuma ada di HP kamu.
-        </p>
+        <p className="mx-auto mt-4 max-w-xs text-base font-medium opacity-80">{t.welcome.subtitle}</p>
         <button
           onClick={onStart}
           className="mx-auto mt-8 flex items-center gap-4 rounded-full bg-white/60 py-2 pl-7 pr-2 text-base font-bold backdrop-blur-sm transition active:scale-[0.98]"
         >
-          Yuk, Mulai
+          {t.welcome.cta}
           <span className="flex h-11 w-11 items-center justify-center rounded-full bg-[#181818] text-white">
             <ArrowRight size={18} />
           </span>

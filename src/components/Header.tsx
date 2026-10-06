@@ -1,7 +1,7 @@
 import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import { format, isSameMonth } from 'date-fns';
-import { id as localeId } from 'date-fns/locale';
 import { useSyncStatus } from '../hooks/useSyncStatus';
+import { useI18n } from '../lib/i18n';
 
 interface HeaderProps {
   title: string;
@@ -16,12 +16,13 @@ const BTN = 'flex h-12 w-12 items-center justify-center rounded-2xl bg-white/70 
 
 export function Header({ title, visibleMonth, onPrevMonth, onNextMonth, onToday, children }: HeaderProps) {
   const isSaving = useSyncStatus();
+  const { t, dateFnsLocale } = useI18n();
   const isCurrentMonth = isSameMonth(visibleMonth, new Date());
 
   return (
     <header className="px-5 pt-[max(env(safe-area-inset-top),1.25rem)]">
       <div className="flex items-center justify-between lg:justify-center lg:gap-10">
-        <button onClick={onPrevMonth} aria-label="Bulan sebelumnya" className={BTN}>
+        <button onClick={onPrevMonth} aria-label={t.header.prevMonth} className={BTN}>
           <ChevronLeft size={20} />
         </button>
         <div className="text-center">
@@ -29,9 +30,9 @@ export function Header({ title, visibleMonth, onPrevMonth, onNextMonth, onToday,
             {title}
             {isSaving && <Loader2 size={14} className="animate-spin text-[var(--muted)]" />}
           </p>
-          <p className="text-sm capitalize text-[var(--muted)]">{format(visibleMonth, 'MMMM yyyy', { locale: localeId })}</p>
+          <p className="text-sm capitalize text-[var(--muted)]">{format(visibleMonth, 'MMMM yyyy', { locale: dateFnsLocale })}</p>
         </div>
-        <button onClick={onNextMonth} aria-label="Bulan berikutnya" className={BTN}>
+        <button onClick={onNextMonth} aria-label={t.header.nextMonth} className={BTN}>
           <ChevronRight size={20} />
         </button>
       </div>
@@ -40,7 +41,7 @@ export function Header({ title, visibleMonth, onPrevMonth, onNextMonth, onToday,
           onClick={onToday}
           className="mx-auto mt-3 block rounded-full bg-[var(--ink)] px-4 py-1.5 text-xs font-bold text-white transition active:scale-95 dark:text-[#181818]"
         >
-          Kembali ke bulan ini
+          {t.header.backToThisMonth}
         </button>
       )}
       {children}

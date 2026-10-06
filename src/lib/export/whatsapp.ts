@@ -1,11 +1,17 @@
 import type { CycleEntry, DailyLog } from '../../db/schema';
-import { SYMPTOM_OPTIONS, MOOD_OPTIONS, FLOW_OPTIONS } from '../../data/phases';
+import { getFlowOptions, getMoodOptions, getSymptomOptions } from '../../data/phases';
+import type { Translations } from '../i18n/locales/id';
 
 function labelFor(list: readonly { key: string; label: string }[], key: string): string {
   return list.find((o) => o.key === key)?.label ?? key;
 }
 
-export function generateWhatsAppSummary(monthName: string, cycles: CycleEntry[], dailyLogs: DailyLog[], phone = ''): string {
+export function generateWhatsAppSummary(t: Translations, monthName: string, cycles: CycleEntry[], dailyLogs: DailyLog[], phone = ''): string {
+  const symptomOptions = getSymptomOptions(t);
+  const moodOptions = getMoodOptions(t);
+  const flowOptions = getFlowOptions(t);
+  const tr = t.export.whatsapp;
+
   const sortedCycles = [...cycles].sort((a, b) => b.startDate.localeCompare(a.startDate));
   const lastCycle = sortedCycles[0];
   const avgCycleLength = cycles.length
@@ -14,30 +20,30 @@ export function generateWhatsAppSummary(monthName: string, cycles: CycleEntry[],
 
   const sortedLogs = [...dailyLogs].sort((a, b) => a.date.localeCompare(b.date));
 
-  const text = `\u{1F338} *REKAP SIKLUS MENSTRUASI (MEKAR AYU)* \u{1F338}
-Periode: ${monthName}
+  const dailyNotes = sortedLogs.length
+    ? sortedLogs
+        .map((log) => {
+          const symptoms = log.symptoms.map((s) => labelFor(symptomOptions, s)).join(', ') || '-';
+          const moods = log.moods.map((m) => labelFor(moodOptions, m)).join(', ') || '-';
+          const flow = log.flowIntensity ? labelFor(flowOptions, log.flowIntensity) : tr.noFlow;
+          return tr.logLine(log.date, flow, symptoms, moods, log.notes || '-');
+        })
+        .join('\n')
+    : tr.noDailyNotes;
 
-\u{1F4CC} *Ringkasan Siklus:*
-• Total Hari Dicatat: ${sortedLogs.length} hari
-• Hari Pertama Menstruasi Terakhir: ${lastCycle?.startDate || 'Belum ada data'}
-• Status Siklus: ${cycles.length >= 2 ? `Rata-rata ${avgCycleLength} Hari` : 'Data belum cukup untuk rata-rata'}
+  const text = `\u{1F338} ${tr.headerLine} \u{1F338}
+${tr.periodLabel(monthName)}
 
-\u{1F4A1} *Catatan Harian Bulan Ini:*
-${
-    sortedLogs.length
-      ? sortedLogs
-          .map((log) => {
-            const symptoms = log.symptoms.map((s) => labelFor(SYMPTOM_OPTIONS, s)).join(', ') || '-';
-            const moods = log.moods.map((m) => labelFor(MOOD_OPTIONS, m)).join(', ') || '-';
-            const flow = log.flowIntensity ? labelFor(FLOW_OPTIONS, log.flowIntensity) : 'tidak ada';
-            return `• ${log.date}: Flow (${flow}), Gejala (${symptoms}), Mood (${moods}), Catatan: ${log.notes || '-'}`;
-          })
-          .join('\n')
-      : 'Belum ada catatan harian pada bulan ini.'
-  }
+\u{1F4CC} ${tr.summaryTitle}
+• ${tr.totalDaysLogged(sortedLogs.length)}
+• ${tr.lastPeriodStart(lastCycle?.startDate || tr.noDataYet)}
+• ${tr.statusLabel(cycles.length >= 2 ? tr.avgDays(avgCycleLength) : tr.notEnoughData)}
+
+\u{1F4A1} ${tr.dailyNotesTitle}
+${dailyNotes}
 
 ---
-\u{1F512} Data ini dicatat privat di Mekar Ayu (100% Local-First, Tanpa Server).`;
+\u{1F512} ${tr.footerPrivacy}`;
 
   const number = phone.replace(/\D/g, '').replace(/^0/, '62');
   return `https://wa.me/${number}?text=${encodeURIComponent(text)}`;

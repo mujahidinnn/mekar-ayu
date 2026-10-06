@@ -2,13 +2,15 @@ import { useState } from 'react';
 import { format } from 'date-fns';
 import { ChevronRight } from 'lucide-react';
 import type { CycleEntry, DailyLog } from '../../db/schema';
-import { MOOD_OPTIONS, SYMPTOM_OPTIONS } from '../../data/phases';
+import { getMoodOptions, getSymptomOptions } from '../../data/phases';
+import type { MoodKey } from '../../data/phases';
 import { FaceDetails, MoodFace } from '../MoodFace';
 import { SymptomIcon } from '../SymptomIcon';
 import type { CycleStats } from '../../lib/cycleMath';
 import { CalendarGrid } from '../CalendarGrid';
 import { Header } from '../Header';
 import { HistorySheet } from '../HistorySheet';
+import { useI18n } from '../../lib/i18n';
 
 interface StatsScreenProps {
   stats: CycleStats;
@@ -20,19 +22,6 @@ interface StatsScreenProps {
   onToday: () => void;
   onSelectDate: (dateStr: string) => void;
 }
-
-const MOOD_NOTE: Record<string, string> = {
-  hp: 'Bulan ini kamu banyak happy-nya. Keep glowing, ya!',
-  ir: 'Lagi gampang kesel? Wajar banget, kok. Ambil jeda dulu, ya.',
-  ax: 'Lagi sering overthinking, ya? Tarik napas pelan, satu-satu aja.',
-  sd: 'Bulan ini lagi sering sedih. Nggak apa-apa, kamu nggak sendirian.',
-  en: 'Energimu lagi full! Pas banget buat coba hal baru.',
-  cl: 'Vibes kamu lagi adem dan stabil. Nikmatin aja, ya.',
-  cf: 'Lagi pede-pedenya, nih. Bawa terus energi itu, ya!',
-  ss: 'Lagi gampang baper bulan ini. Perasaanmu valid, kok.',
-  st: 'Bulan ini lumayan bikin stres, ya. Jangan lupa kasih jeda buat dirimu.',
-  um: 'Lagi sering mager? Nggak apa-apa, tubuhmu mungkin butuh rehat.',
-};
 
 function countByKey(dailyLogs: DailyLog[], monthPrefix: string, pick: (log: DailyLog) => string[]) {
   const count = new Map<string, number>();
@@ -50,12 +39,14 @@ function topKey(count: Map<string, number>) {
 }
 
 export function StatsScreen({ stats, cycles, dailyLogs, visibleMonth, onPrevMonth, onNextMonth, onToday, onSelectDate }: StatsScreenProps) {
+  const { t } = useI18n();
   const [historyOpen, setHistoryOpen] = useState(false);
   const monthPrefix = format(visibleMonth, 'yyyy-MM');
   const moodCount = countByKey(dailyLogs, monthPrefix, (l) => l.moods ?? []);
-  const mood = topKey(moodCount);
+  const mood = topKey(moodCount) as MoodKey | null;
   const symptomCount = countByKey(dailyLogs, monthPrefix, (l) => l.symptoms ?? []);
-  const topSymptoms = SYMPTOM_OPTIONS.map((o) => ({ ...o, count: symptomCount.get(o.key) ?? 0 }))
+  const topSymptoms = getSymptomOptions(t)
+    .map((o) => ({ ...o, count: symptomCount.get(o.key) ?? 0 }))
     .filter((o) => o.count > 0)
     .sort((a, b) => b.count - a.count)
     .slice(0, 3);
@@ -63,7 +54,7 @@ export function StatsScreen({ stats, cycles, dailyLogs, visibleMonth, onPrevMont
 
   return (
     <>
-      <Header title="Kalender Mood" visibleMonth={visibleMonth} onPrevMonth={onPrevMonth} onNextMonth={onNextMonth} onToday={onToday} />
+      <Header title={t.stats.title} visibleMonth={visibleMonth} onPrevMonth={onPrevMonth} onNextMonth={onNextMonth} onToday={onToday} />
       <main className="flex-1 pb-32 pt-2 lg:grid lg:grid-cols-2 lg:items-start lg:pb-10">
         <CalendarGrid
           mode="mood"
@@ -78,16 +69,16 @@ export function StatsScreen({ stats, cycles, dailyLogs, visibleMonth, onPrevMont
         <div className="space-y-4 pt-4">
         <MoodSummaryCard
           className="mx-5"
-          caption="Ringkasan mood bulan ini"
+          caption={t.stats.moodSummaryCaption}
+          label={mood ? t.moods[mood] : t.stats.moodSummaryEmptyTitle}
           mood={mood}
-          emptyTitle="Belum ada"
-          note={mood ? MOOD_NOTE[mood] : 'Pilih mood di Beranda tiap hari, nanti rekapnya muncul di sini.'}
+          note={mood ? t.stats.moodNotes[mood] : t.stats.moodSummaryDefaultNote}
         />
 
         <div className="card mx-5 p-4">
-          <p className="text-base font-bold">Sebaran mood</p>
+          <p className="text-base font-bold">{t.stats.moodDistribution}</p>
           <div className="mt-3 grid grid-cols-3 gap-2">
-            {MOOD_OPTIONS.map((opt) => (
+            {getMoodOptions(t).map((opt) => (
               <div key={opt.key} className="flex items-center gap-2 rounded-2xl bg-[var(--surface)] p-2">
                 <MoodFace mood={opt.key} size={30} />
                 <div className="min-w-0">
@@ -100,9 +91,9 @@ export function StatsScreen({ stats, cycles, dailyLogs, visibleMonth, onPrevMont
         </div>
 
         <div className="card mx-5 p-4">
-          <p className="text-base font-bold">Sinyal tubuh tersering</p>
+          <p className="text-base font-bold">{t.stats.topSignalsTitle}</p>
           {topSymptoms.length === 0 ? (
-            <p className="mt-2 text-sm text-[var(--muted)]">Belum ada sinyal tubuh yang tercatat bulan ini. Ketuk tanggal di kalender buat mulai catat.</p>
+            <p className="mt-2 text-sm text-[var(--muted)]">{t.stats.topSignalsEmpty}</p>
           ) : (
             <div className="mt-3 space-y-2.5">
               {topSymptoms.map((s) => (
@@ -120,17 +111,17 @@ export function StatsScreen({ stats, cycles, dailyLogs, visibleMonth, onPrevMont
           )}
         </div>
 
-        <h2 className="px-5 pt-2 text-xl font-bold">Siklus kamu</h2>
+        <h2 className="px-5 pt-2 text-xl font-bold">{t.stats.yourCycleTitle}</h2>
         <div className="grid grid-cols-3 gap-3 px-5">
-          <StatTile label="Siklus" value={stats.avgCycleLength || '–'} unit="Hari" />
-          <StatTile label="Haid" value={stats.avgPeriodLength || '–'} unit="Hari" />
-          <StatTile label="Tercatat" value={stats.cycleHistory.length} unit="Siklus" />
+          <StatTile label={t.stats.cycleLabel} value={stats.avgCycleLength || '–'} unit={t.stats.dayUnit} />
+          <StatTile label={t.stats.periodLabel} value={stats.avgPeriodLength || '–'} unit={t.stats.dayUnit} />
+          <StatTile label={t.stats.recordedLabel} value={stats.cycleHistory.length} unit={t.stats.cycleUnit} />
         </div>
 
         <button onClick={() => setHistoryOpen(true)} className="card mx-5 flex w-[calc(100%-2.5rem)] items-center justify-between p-4 text-left transition active:scale-[0.99]">
           <span>
-            <span className="block text-base font-bold">Riwayat & tren siklus</span>
-            <span className="block text-sm text-[var(--muted)]">Lihat semua siklus yang udah tercatat</span>
+            <span className="block text-base font-bold">{t.stats.historyRowTitle}</span>
+            <span className="block text-sm text-[var(--muted)]">{t.stats.historyRowSub}</span>
           </span>
           <ChevronRight size={18} className="shrink-0 text-[var(--muted)]" />
         </button>
@@ -154,21 +145,21 @@ export function StatTile({ label, value, unit }: { label: string; value: string 
 
 function MoodSummaryCard({
   caption,
+  label,
   mood,
-  emptyTitle,
   note,
   className = '',
 }: {
   caption: string;
-  mood: string | null;
-  emptyTitle: string;
+  label: string;
+  mood: MoodKey | null;
   note: string;
   className?: string;
 }) {
   return (
     <div className={`relative overflow-hidden rounded-[24px] bg-[linear-gradient(135deg,#FFB49C_0%,#FFA9C8_50%,#EFB6E6_100%)] p-5 text-[#181818] ${className}`}>
       <p className="text-sm">{caption}</p>
-      <p className="mt-6 text-[2rem] font-bold leading-none">{MOOD_OPTIONS.find((m) => m.key === mood)?.label ?? emptyTitle}</p>
+      <p className="mt-6 text-[2rem] font-bold leading-none">{label}</p>
       <p className="mt-3 max-w-[62%] text-sm">{note}</p>
       <BigFace mood={mood} className="absolute -right-5 bottom-3 h-28 w-32" />
     </div>

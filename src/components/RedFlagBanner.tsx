@@ -1,11 +1,13 @@
 import { AlertTriangle } from 'lucide-react';
 import type { Flag, RedFlagKey } from '../lib/cycleMath';
+import { useI18n } from '../lib/i18n';
 
 interface RedFlagBannerProps {
   flags: Flag<RedFlagKey>[];
 }
 
 export function RedFlagBanner({ flags }: RedFlagBannerProps) {
+  const { t } = useI18n();
   if (flags.length === 0) return null;
 
   return (
@@ -13,15 +15,13 @@ export function RedFlagBanner({ flags }: RedFlagBannerProps) {
       <div className="flex items-start gap-3">
         <AlertTriangle size={20} className="mt-0.5 shrink-0" />
         <div>
-          <p className="text-sm font-bold">Tubuhmu lagi kasih sinyal</p>
+          <p className="text-sm font-bold">{t.redFlag.title}</p>
           <ul className="mt-1 space-y-1 text-sm">
             {flags.map((f) => (
-              <li key={f.key}>• {f.message}</li>
+              <li key={f.key}>• {t.flags.red[f.key]}</li>
             ))}
           </ul>
-          <p className="mt-2 text-xs text-[#181818]/70">
-            Nggak perlu panik, ya. Tapi ada baiknya kamu konsultasi ke dokter kandungan (Sp.OG) biar lebih tenang. Catatan ini bersifat edukatif, bukan diagnosis medis.
-          </p>
+          <p className="mt-2 text-xs text-[#181818]/70">{t.redFlag.footer}</p>
         </div>
       </div>
     </div>

@@ -25,8 +25,14 @@ export type RedFlagKey =
 
 export interface Flag<K extends string> {
   key: K;
-  message: string;
 }
+
+export type CycleStatus =
+  | { kind: 'active'; day: number }
+  | { kind: 'countdown'; days: number }
+  | { kind: 'dueToday' }
+  | { kind: 'overdue'; days: number }
+  | { kind: 'unknown' };
 
 export interface CycleStats {
   today: string;
@@ -41,7 +47,7 @@ export interface CycleStats {
   fertileWindowEnd: string | null;
   currentPhase: PhaseKey | null;
   isPeriodActive: boolean;
-  statusLabel: string;
+  status: CycleStatus;
   cycleHistory: CycleEntry[];
   irregularityFlags: Flag<IrregularityFlagKey>[];
   redFlags: Flag<RedFlagKey>[];
@@ -161,49 +167,46 @@ export function computeCycleStats(
     else currentPhase = 'luteal';
   }
 
-  let statusLabel: string;
+  let status: CycleStatus;
   if (isPeriodActive && currentCycleDay !== null) {
-    statusLabel = `Hari ke-${currentCycleDay} Menstruasi`;
+    status = { kind: 'active', day: currentCycleDay };
   } else if (predictedNextPeriodStart) {
     const daysUntil = differenceInCalendarDays(parseISO(predictedNextPeriodStart), parseISO(today));
-    if (daysUntil > 0) statusLabel = `${daysUntil} hari menuju haid`;
-    else if (daysUntil === 0) statusLabel = 'Haid diperkirakan hari ini';
-    else statusLabel = `Lewat ${Math.abs(daysUntil)} hari dari perkiraan`;
+    if (daysUntil > 0) status = { kind: 'countdown', days: daysUntil };
+    else if (daysUntil === 0) status = { kind: 'dueToday' };
+    else status = { kind: 'overdue', days: Math.abs(daysUntil) };
   } else {
-    statusLabel = 'Yuk, kenali siklusmu';
+    status = { kind: 'unknown' };
   }
 
   const irregularityFlags: Flag<IrregularityFlagKey>[] = [];
 
   const lastTwoCycleLengths = recentCycleLengths.slice(-2);
   if (lastTwoCycleLengths.some((n) => n < 21)) {
-    irregularityFlags.push({ key: 'short_cycle', message: 'Siklus lebih pendek dari 21 hari (Polymenorrhea).' });
+    irregularityFlags.push({ key: 'short_cycle' });
   }
   if (lastTwoCycleLengths.some((n) => n > 35)) {
-    irregularityFlags.push({ key: 'long_cycle', message: 'Siklus lebih panjang dari 35 hari (Oligomenorrhea).' });
+    irregularityFlags.push({ key: 'long_cycle' });
   }
   const variances: number[] = [];
   for (let i = 1; i < recentCycleLengths.length; i++) {
     variances.push(Math.abs(recentCycleLengths[i] - recentCycleLengths[i - 1]));
   }
   if (variances.some((v) => v > 7)) {
-    irregularityFlags.push({ key: 'high_variance', message: 'Variasi antar siklus lebih dari 7 hari secara berturut-turut.' });
+    irregularityFlags.push({ key: 'high_variance' });
   }
   if (recentPeriodLengths.some((p) => p > 8)) {
-    irregularityFlags.push({ key: 'prolonged_bleeding', message: 'Durasi menstruasi lebih dari 8 hari (Menorrhagia).' });
+    irregularityFlags.push({ key: 'prolonged_bleeding' });
   }
   if (lastPeriodStart && differenceInCalendarDays(parseISO(today), parseISO(lastPeriodStart)) > 90) {
-    irregularityFlags.push({ key: 'amenorrhea', message: 'Tidak ada menstruasi selama lebih dari 90 hari.' });
+    irregularityFlags.push({ key: 'amenorrhea' });
   }
 
   const redFlags: Flag<RedFlagKey>[] = [];
   const recentLogs = dailyLogs.filter((l) => differenceInCalendarDays(parseISO(today), parseISO(l.date)) <= 3 && differenceInCalendarDays(parseISO(today), parseISO(l.date)) >= 0);
 
   if (recentLogs.some((l) => l.symptoms.includes('sp'))) {
-    redFlags.push({
-      key: 'severe_pain',
-      message: 'Nyeri hebat yang mengganggu aktivitas harian dan tidak mereda dengan obat pereda nyeri biasa.',
-    });
+    redFlags.push({ key: 'severe_pain' });
   }
 
   const sortedLogsDesc = [...dailyLogs].sort((a, b) => b.date.localeCompare(a.date));
@@ -213,24 +216,18 @@ export function computeCycleStats(
     else break;
   }
   if (consecutiveHeavy >= 3) {
-    redFlags.push({
-      key: 'heavy_bleeding',
-      message: 'Pendarahan deras tercatat 3 hari berturut-turut. Waspadai tanda Menorrhagia.',
-    });
+    redFlags.push({ key: 'heavy_bleeding' });
   }
 
   if (irregularityFlags.some((f) => f.key === 'short_cycle' || f.key === 'long_cycle')) {
-    redFlags.push({ key: 'irregular_cycle', message: 'Panjang siklus di luar rentang normal (21–35 hari) secara konsisten.' });
+    redFlags.push({ key: 'irregular_cycle' });
   }
   if (irregularityFlags.some((f) => f.key === 'amenorrhea')) {
-    redFlags.push({ key: 'amenorrhea', message: 'Tidak menstruasi selama 90+ hari berturut-turut (dan bukan karena kehamilan).' });
+    redFlags.push({ key: 'amenorrhea' });
   }
 
   if (intermenstrualSpottingDates.length > 0) {
-    redFlags.push({
-      key: 'intermenstrual_bleeding',
-      message: 'Terdapat flek/bercak darah di luar periode menstruasi utama.',
-    });
+    redFlags.push({ key: 'intermenstrual_bleeding' });
   }
 
   return {
@@ -246,7 +243,7 @@ export function computeCycleStats(
     fertileWindowEnd,
     currentPhase,
     isPeriodActive,
-    statusLabel,
+    status,
     cycleHistory: sortedCycles,
     irregularityFlags,
     redFlags,

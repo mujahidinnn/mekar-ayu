@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import type { PointerEvent as ReactPointerEvent, ReactNode } from 'react';
 import { X } from 'lucide-react';
+import { useI18n } from '../../lib/i18n';
 
 interface SheetProps {
   open: boolean;
@@ -15,6 +16,7 @@ const FLICK_VELOCITY_PX_PER_MS = 0.5;
 const CLOSE_ANIMATION_MS = 200;
 
 export function Sheet({ open, onClose, title, children }: SheetProps) {
+  const { t } = useI18n();
   const panelRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef({ startY: 0, lastY: 0, lastTime: 0, velocity: 0, dragging: false });
 
@@ -82,7 +84,7 @@ export function Sheet({ open, onClose, title, children }: SheetProps) {
 
   return (
     <div className="fixed inset-0 z-50 !m-0 flex items-end justify-center md:items-center md:p-6">
-      <button aria-label="Tutup" className="absolute inset-0 bg-[#181818]/40 animate-fade-in" onClick={onClose} />
+      <button aria-label={t.common.close} className="absolute inset-0 bg-[#181818]/40 animate-fade-in" onClick={onClose} />
       <div
         ref={panelRef}
         role="dialog"
@@ -102,7 +104,7 @@ export function Sheet({ open, onClose, title, children }: SheetProps) {
             <h2 className="mt-2 text-lg font-extrabold">{title}</h2>
             <button
               onClick={onClose}
-              aria-label="Tutup"
+              aria-label={t.common.close}
               className="mt-2 flex h-10 w-10 items-center justify-center rounded-full bg-[var(--surface)] transition active:scale-95"
             >
               <X size={18} />

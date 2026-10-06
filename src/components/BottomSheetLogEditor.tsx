@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import { format, parseISO } from 'date-fns';
-import { id as localeId } from 'date-fns/locale';
 import { Sheet } from './ui/Sheet';
 import { Chip } from './ui/Chip';
 import { MoodFace } from './MoodFace';
@@ -8,7 +7,8 @@ import { SymptomIcon } from './SymptomIcon';
 import { db, type FlowIntensity } from '../db/schema';
 import { syncCyclesTable } from '../lib/cycleSync';
 import { withSync } from '../lib/syncStatus';
-import { FLOW_OPTIONS, MOOD_OPTIONS, SYMPTOM_OPTIONS } from '../data/phases';
+import { getFlowOptions, getMoodOptions, getSymptomOptions } from '../data/phases';
+import { useI18n } from '../lib/i18n';
 
 interface BottomSheetLogEditorProps {
   dateStr: string | null;
@@ -27,6 +27,7 @@ const SAVE_DEBOUNCE_MS = 350;
 const FLOW_ACTIVE_CLASS = 'bg-[#FF8A80] text-[#181818]';
 
 export function BottomSheetLogEditor({ dateStr, onClose }: BottomSheetLogEditorProps) {
+  const { t, dateFnsLocale } = useI18n();
   const [flowIntensity, setFlowIntensity] = useState<FlowIntensity>('n');
   const [symptoms, setSymptoms] = useState<string[]>([]);
   const [moods, setMoods] = useState<string[]>([]);
@@ -103,15 +104,15 @@ export function BottomSheetLogEditor({ dateStr, onClose }: BottomSheetLogEditorP
 
   if (!dateStr) return null;
 
-  const title = format(parseISO(dateStr), "EEEE, d MMMM yyyy", { locale: localeId });
+  const title = format(parseISO(dateStr), "EEEE, d MMMM yyyy", { locale: dateFnsLocale });
 
   return (
     <Sheet open={!!dateStr} onClose={handleClose} title={title}>
       <div className="space-y-6 pb-4">
         <section>
-          <h3 className="mb-2 text-sm font-bold">Aliran haid</h3>
+          <h3 className="mb-2 text-sm font-bold">{t.logEditor.flowLabel}</h3>
           <div className="flex flex-wrap gap-2">
-            {FLOW_OPTIONS.map((opt) => (
+            {getFlowOptions(t).map((opt) => (
               <button
                 key={opt.key}
                 onClick={() => {
@@ -132,9 +133,9 @@ export function BottomSheetLogEditor({ dateStr, onClose }: BottomSheetLogEditorP
         </section>
 
         <section>
-          <h3 className="mb-2 text-sm font-bold">Sinyal tubuh</h3>
+          <h3 className="mb-2 text-sm font-bold">{t.logEditor.signalsLabel}</h3>
           <div className="flex flex-wrap gap-2">
-            {SYMPTOM_OPTIONS.map((opt) => (
+            {getSymptomOptions(t).map((opt) => (
               <Chip
                 key={opt.key}
                 label={opt.label}
@@ -152,9 +153,9 @@ export function BottomSheetLogEditor({ dateStr, onClose }: BottomSheetLogEditorP
         </section>
 
         <section>
-          <h3 className="mb-2 text-sm font-bold">Mood</h3>
+          <h3 className="mb-2 text-sm font-bold">{t.logEditor.moodLabel}</h3>
           <div className="flex flex-wrap gap-2">
-            {MOOD_OPTIONS.map((opt) => (
+            {getMoodOptions(t).map((opt) => (
               <button
                 key={opt.key}
                 type="button"
@@ -176,21 +177,21 @@ export function BottomSheetLogEditor({ dateStr, onClose }: BottomSheetLogEditorP
         </section>
 
         <section>
-          <h3 className="mb-2 text-sm font-bold">Catatan</h3>
+          <h3 className="mb-2 text-sm font-bold">{t.logEditor.notesLabel}</h3>
           <textarea
             value={notes}
             onChange={(e) => {
               setNotes(e.target.value);
               persist({ flowIntensity, symptoms, moods, notes: e.target.value });
             }}
-            placeholder="Ada cerita apa hari ini? Tulis di sini..."
+            placeholder={t.logEditor.notesPlaceholder}
             rows={3}
             className="w-full rounded-2xl bg-[var(--surface)] p-3 text-sm text-[var(--ink)] placeholder:text-[var(--muted)] focus:outline-none focus:ring-2 focus:ring-[var(--ink)]"
           />
         </section>
 
         <p className={`text-center text-xs text-emerald-600 transition-opacity dark:text-emerald-400 ${saved ? 'opacity-100' : 'opacity-0'}`}>
-          Tersimpan otomatis
+          {t.logEditor.savedAutomatically}
         </p>
       </div>
     </Sheet>

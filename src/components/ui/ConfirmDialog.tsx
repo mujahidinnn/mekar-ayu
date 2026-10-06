@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { ReactNode } from 'react';
+import { useI18n } from '../../lib/i18n';
 
 interface ConfirmDialogProps {
   open: boolean;
@@ -18,12 +19,14 @@ export function ConfirmDialog({
   title,
   description,
   confirmLabel,
-  cancelLabel = 'Batal',
+  cancelLabel,
   destructive = false,
   requireText,
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
+  const { t } = useI18n();
+  const resolvedCancelLabel = cancelLabel ?? t.common.cancel;
   const [typed, setTyped] = useState('');
   if (!open) return null;
 
@@ -35,13 +38,13 @@ export function ConfirmDialog({
 
   return (
     <div className="fixed inset-0 z-[60] !m-0 flex items-center justify-center p-6">
-      <button aria-label={cancelLabel} className="absolute inset-0 bg-[#181818]/50 animate-fade-in" onClick={handle(onCancel)} />
+      <button aria-label={resolvedCancelLabel} className="absolute inset-0 bg-[#181818]/50 animate-fade-in" onClick={handle(onCancel)} />
       <div className="relative w-full max-w-sm rounded-3xl bg-[var(--card)] p-5 shadow-2xl animate-fade-in">
         <h3 className="text-base font-bold text-[var(--ink)]">{title}</h3>
         <div className="mt-2 text-sm leading-relaxed text-[var(--muted)]">{description}</div>
         {requireText && (
           <label className="mt-4 block text-xs text-[var(--muted)]">
-            Ketik <b className="text-[var(--ink)]">{requireText}</b> buat lanjut
+            {t.common.typeToConfirm(requireText)}
             <input
               value={typed}
               onChange={(e) => setTyped(e.target.value)}
@@ -57,7 +60,7 @@ export function ConfirmDialog({
             onClick={handle(onCancel)}
             className="min-h-11 flex-1 rounded-2xl bg-[var(--surface)] text-sm font-semibold text-[var(--ink)] active:scale-95 transition"
           >
-            {cancelLabel}
+            {resolvedCancelLabel}
           </button>
           <button
             onClick={handle(onConfirm)}
